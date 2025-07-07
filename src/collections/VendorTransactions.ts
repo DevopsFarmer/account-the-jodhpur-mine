@@ -43,6 +43,12 @@ export const VendorTransactions: CollectionConfig = {
           name: "workstatus",
           type: 'text',
           defaultValue: 'incomplete',
+        },
+        {
+          name: "stageDate",
+          type: 'date',
+          
+          
         }
       ],
     },

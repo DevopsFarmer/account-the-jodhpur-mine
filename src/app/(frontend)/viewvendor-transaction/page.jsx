@@ -1300,6 +1300,7 @@ const ViewVendorTransaction = () => {
                         <th>Work Status</th>
                         <th>Vendor Stage</th>
                         <th>Vendor Description</th>
+                        <th>Stage Date</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1319,33 +1320,62 @@ const ViewVendorTransaction = () => {
                             <td>{companyStage?.workingStage || "N/A"}</td>
                             <td>{companyStage?.workingDescription || "N/A"}</td>
                             <td>
-                            <td>
-  <Button
-    variant={workStatus === "incomplete" ? "danger" : "success"}
-    onClick={() => toggleWorkStatus(selectedVendorTransaction.id, index)}
-    className="rounded-pill text-capitalize fw-bold"
-    size="sm"
-    disabled={!companyStage}
-  >
-    {workStatus === "incomplete" ? (
-      <>
-        <FaTimesCircle className="me-1" />
-        Incomplete
-      </>
-    ) : (
-      <>
-        <FaCheckCircle className="me-1" />
-        Complete
-      </>
-    )}
-  </Button>
-  {!companyStage && (
-    <small className="d-block text-muted mt-1">No stage data</small>
-  )}
-</td>
+                              <Button
+                                variant={workStatus === "incomplete" ? "danger" : "success"}
+                                onClick={() => toggleWorkStatus(selectedVendorTransaction.id, index)}
+                                className="rounded-pill text-capitalize fw-bold"
+                                size="sm"
+                                disabled={!companyStage}
+                              >
+                                {workStatus === "incomplete" ? (
+                                  <>
+                                    <FaTimesCircle className="me-1" />
+                                    Incomplete
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaCheckCircle className="me-1" />
+                                    Complete
+                                  </>
+                                )}
+                              </Button>
+                              {!companyStage && (
+                                <small className="d-block text-muted mt-1">No stage data</small>
+                              )}
                             </td>
                             <td>{vendorStage?.workingStagevendor || "N/A"}</td>
                             <td>{vendorStage?.workingDescriptionvendor || "N/A"}</td>
+                            <td>
+                              {vendorStage?.stageDate ? (
+                                <div>
+                                  <div className="fw-bold text-primary">
+                                    {new Date(vendorStage.stageDate).toLocaleDateString('en-GB')}
+                                  </div>
+                                  <small className="text-muted">
+                                    {new Date(vendorStage.stageDate).toLocaleTimeString('en-US', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    })}
+                                  </small>
+                                </div>
+                              ) : companyStage?.stageDate ? (
+                                <div>
+                                  <div className="fw-bold text-primary">
+                                    {new Date(companyStage.stageDate).toLocaleDateString('en-GB')}
+                                  </div>
+                                  <small className="text-muted">
+                                    {new Date(companyStage.stageDate).toLocaleTimeString('en-US', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    })}
+                                  </small>
+                                </div>
+                              ) : (
+                                <span className="text-muted">No date</span>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}

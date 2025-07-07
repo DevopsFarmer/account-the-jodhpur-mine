@@ -719,6 +719,7 @@ const ViewClientTransaction = () => {
                         <th>Work Status</th>
                         <th>Client Stage</th>
                         <th>Client Description</th>
+                        <th>Stage Date</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -781,6 +782,20 @@ const ViewClientTransaction = () => {
                             </td>
                             <td>{clientStage?.workingStageclient || "N/A"}</td>
                             <td>{clientStage?.workingDescriptionclient || "N/A"}</td>
+                            <td>
+                              {clientStage?.stageDate ? (
+                                <div>
+                                  <div className="fw-bold text-primary">
+                                    {formatDate(clientStage.stageDate)}
+                                  </div>
+                                  <small className="text-muted">
+                                    {formatTime(clientStage.stageDate)}
+                                  </small>
+                                </div>
+                              ) : (
+                                <span className="text-muted">No date</span>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}

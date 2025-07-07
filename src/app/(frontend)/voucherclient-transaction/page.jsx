@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -704,6 +703,7 @@ const VoucherClientTransaction = () => {
                         <th>Work Status</th>
                         <th>Client Stage</th>
                         <th>Client Description</th>
+                        <th>Stage Date</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -714,8 +714,7 @@ const VoucherClientTransaction = () => {
                         ),
                       }).map((_, index) => {
                         const companyStage = selectedTransaction.workingStage?.[index];
-                        const clientStage =
-                          selectedTransaction.workingStageclient?.[index];
+                        const clientStage = selectedTransaction.workingStageclient?.[index];
                         const workStatus = companyStage?.workstatus || "incomplete";
                         const isStageLoading =
                           workStatusLoadingId &&
@@ -726,35 +725,55 @@ const VoucherClientTransaction = () => {
                           <tr key={index}>
                             <td>{index + 1}</td>
                             <td>
-                            <td>
-                            <td>
-  <Button
-    variant={workStatus === "incomplete" ? "danger" : "success"}
-    onClick={() => toggleWorkStatus(selectedTransaction.id, index)}
-    className="rounded-pill text-capitalize fw-bold d-flex align-items-center justify-content-center mx-auto"
-    size="sm"
-    style={{ minWidth: '120px' }}
-  >
-    {workStatus === "incomplete" ? (
-      <>
-        <FaTimesCircle className="me-1" />
-        Incomplete
-      </>
-    ) : (
-      <>
-        <FaCheckCircle className="me-1" />
-        Complete
-      </>
-    )}
-  </Button>
-</td>
-  {!companyStage && (
-    <small className="d-block text-muted mt-1">No stage data</small>
-  )}
-</td>
+                              <Button
+                                variant={workStatus === "incomplete" ? "danger" : "success"}
+                                onClick={() => toggleWorkStatus(selectedTransaction.id, index)}
+                                className="rounded-pill text-capitalize fw-bold d-flex align-items-center justify-content-center mx-auto"
+                                size="sm"
+                                style={{ minWidth: '120px' }}
+                                disabled={isStageLoading}
+                              >
+                                {isStageLoading ? (
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                    className="me-1"
+                                  />
+                                ) : workStatus === "incomplete" ? (
+                                  <>
+                                    <FaTimesCircle className="me-1" />
+                                    Incomplete
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaCheckCircle className="me-1" />
+                                    Complete
+                                  </>
+                                )}
+                              </Button>
+                              {!companyStage && (
+                                <small className="d-block text-muted mt-1">No stage data</small>
+                              )}
                             </td>
                             <td>{clientStage?.workingStageclient || "N/A"}</td>
                             <td>{clientStage?.workingDescriptionclient || "N/A"}</td>
+                            <td>
+                              {clientStage?.stageDate ? (
+                                <div>
+                                  <div className="fw-bold text-primary">
+                                    {formatDate(clientStage.stageDate)}
+                                  </div>
+                                  <small className="text-muted">
+                                    {formatTime(clientStage.stageDate)}
+                                  </small>
+                                </div>
+                              ) : (
+                                <span className="text-muted">No date</span>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
