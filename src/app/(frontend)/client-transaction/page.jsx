@@ -282,6 +282,7 @@
 // };
 // export default ClientTransaction;
 
+<<<<<<< HEAD
 // pages/add-client-transaction.jsx
 // 'use client'; // Needed to use hooks like useRouter in Next.js (client-side code)
 // // ✅ Import required dependencies
@@ -581,11 +582,18 @@ import { useRouter } from 'next/navigation';
 import { Container, Form, Button, Row, Col, Alert, Spinner, Card } from 'react-bootstrap';
 
 // Import icons from various libraries for a richer UI
+=======
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Container, Form, Button, Row, Col, Alert, Spinner, Card } from 'react-bootstrap';
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
 import { TbTransactionRupee, TbPlus, TbCreditCard, TbTrashFilled } from 'react-icons/tb';
 import { FaSave, FaExclamationTriangle, FaUserTie, FaMapMarkerAlt, FaCoins, FaPencilAlt, FaUndo } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faIndianRupeeSign, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons';
 
+<<<<<<< HEAD
 // Import a custom Header component (assuming it exists in '../components/Header')
 import Header from '../components/Header';
 
@@ -600,11 +608,26 @@ const ClientTransaction = () => {
   const [submitting, setSubmitting] = useState(false); // Indicates if the form is currently being submitted
 
   // Form state to hold the values of input fields.
+=======
+const AddClientTransaction = () => {
+  // State variables
+  const [userRole, setUserRole] = useState('admin'); // Mock user role for demo
+  const [clients, setClients] = useState([
+    { _id: '1', clientName: 'John Doe', query_license: 'LIC001', near_village: 'Village A' },
+    { _id: '2', clientName: 'Jane Smith', query_license: 'LIC002', near_village: 'Village B' },
+    { _id: '3', clientName: 'Bob Johnson', query_license: 'LIC003', near_village: 'Village C' }
+  ]); // Mock clients data
+  const [loadingClients, setLoadingClients] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form state
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
   const [form, setForm] = useState({
     clientName: '',
     query_license: '',
     near_village: '',
     description: '',
+<<<<<<< HEAD
     paymentstatus: 'pending', // Default payment status
   });
 
@@ -665,13 +688,43 @@ const ClientTransaction = () => {
   // --- Event Handlers ---
 
   // Handles changes for the main form fields
+=======
+    paymentstatus: 'pending',
+  });
+
+  // State for Client's Working Stages only
+  const [workingStagesClient, setWorkingStagesClient] = useState([{ work: '', amount: '' }]);
+
+  // Error and success states
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Mock useEffect for authorization (simplified for demo)
+  useEffect(() => {
+    // Simulate checking user role
+    setUserRole('admin');
+  }, []);
+
+  // Mock useEffect for fetching clients (simplified for demo)
+  useEffect(() => {
+    if (userRole === 'admin' || userRole === 'manager') {
+      setLoadingClients(false);
+    }
+  }, [userRole]);
+
+  // Event Handlers
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
   const handleFormChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
     setSuccess('');
   };
 
+<<<<<<< HEAD
   // Updates a specific 'Client's Working Stage' field (work or amount)
+=======
+  // Updates a specific 'Client's Working Stage' field
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
   const updateStageClient = (index, field, value) => {
     const updated = [...workingStagesClient];
     updated[index][field] = value;
@@ -690,6 +743,7 @@ const ClientTransaction = () => {
     }
   };
 
+<<<<<<< HEAD
   // --- Calculation Functions ---
 
   // Calculates the total amount from 'Client's Working Stages'
@@ -699,6 +753,20 @@ const ClientTransaction = () => {
   };
 
   // Resets the entire form to its initial empty state
+=======
+  // Calculation Functions
+  const getTotalAmountClient = () => {
+    const workTotalClient = workingStagesClient.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+    return workTotalClient;
+  };
+
+  // Since we removed "Our Working Stages", the remaining amount is just the negative of client total
+  const getRemainingAmount = () => {
+    return -getTotalAmountClient(); // Negative because client paid without our charges
+  };
+
+  // Resets the entire form
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
   const handleReset = () => {
     setForm({
       clientName: '',
@@ -717,6 +785,7 @@ const ClientTransaction = () => {
     setError("");
     setSuccess("");
 
+<<<<<<< HEAD
     // Step 1: Basic field presence check
     if (!form.clientName || !form.query_license || !form.near_village) {
       setError("Please fill in all required fields: Client Name, Query License, and Near Village.");
@@ -767,6 +836,57 @@ const ClientTransaction = () => {
       totalAmountclient: getTotalAmountClient(),
       remainingAmount: 0 ,
       workingStage: [],
+=======
+    // Basic field presence check
+    if (!form.clientName || !form.query_license || !form.near_village) {
+      setError("Please fill in all required fields: Client Name, Query License, and Near Village.");
+      return;
+    }
+
+    // Try to find the client that matches all 3 fields
+    const matchedClient = clients.find((client) =>
+      (client.clientName === form.clientName || client._id === form.clientName) &&
+      (client.query_license === form.query_license || client._id === form.query_license) &&
+      (client.near_village === form.near_village || client._id === form.near_village)
+    );
+
+    // If no exact match is found, show error
+    if (!matchedClient) {
+      const clientMatch = clients.some((client) => client.clientName === form.clientName || client._id === form.clientName);
+      const licenseMatch = clients.some((client) => client.query_license === form.query_license || client._id === form.query_license);
+      const villageMatch = clients.some((client) => client.near_village === form.near_village || client._id === form.near_village);
+
+      if (licenseMatch && villageMatch && !clientMatch) {
+        setError("Client Name is incorrect for the selected Query License and Near Village.");
+      } else if (clientMatch && licenseMatch && !villageMatch) {
+        setError("Near Village is incorrect for the selected Client Name and Query License.");
+      } else if (clientMatch && villageMatch && !licenseMatch) {
+        setError("Query License is incorrect for the selected Client Name and Near Village.");
+      } else if (clientMatch && !licenseMatch && !villageMatch) {
+        setError("Both Query License and Near Village are incorrect for the selected Client Name.");
+      } else if (!clientMatch && licenseMatch && !villageMatch) {
+        setError("Client Name and Near Village are incorrect for the selected Query License.");
+      } else if (!clientMatch && !licenseMatch && villageMatch) {
+        setError("Client Name and Query License are incorrect for the selected Near Village.");
+      } else {
+        setError("The provided Client Name, Query License, and Near Village do not match any known client.");
+      }
+      setTimeout(() => handleReset(), 5000);
+      return;
+    }
+
+    // Prepare payload
+    setSubmitting(true);
+
+    const payload = {
+      clientName: matchedClient.clientName,
+      query_license: matchedClient.query_license,
+      near_village: matchedClient.near_village,
+      totalAmount: 0, // No "Our Working Stages", so total is 0
+      totalAmountclient: getTotalAmountClient(),
+      remainingAmount: getRemainingAmount(),
+      workingStage: [], // Empty array since we removed "Our Working Stages"
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
       workingStageclient: workingStagesClient.map((s) => ({
         workingStageclient: s.work,
         workingDescriptionclient: s.amount,
@@ -774,6 +894,7 @@ const ClientTransaction = () => {
       description: form.description,
       clientCreatedAt: new Date().toISOString(),
       clientUpdatedAt: new Date().toISOString(),
+<<<<<<< HEAD
       paymentstatus: "pending", // Always pending for submissions from this form
     };
 
@@ -796,6 +917,22 @@ const ClientTransaction = () => {
         console.error("API Error:", result);
         setError(result.message || "Failed to save transaction. Please check your inputs.");
       }
+=======
+      paymentstatus: "pending",
+    };
+
+    // Mock API call
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSuccess("Client transaction saved successfully!");
+      setTimeout(() => {
+        handleReset();
+        // In real app: router.push("/viewclient-transaction");
+        console.log("Would redirect to view client transactions");
+      }, 1000);
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
     } catch (err) {
       console.error("Unexpected error:", err);
       setError("An unexpected error occurred. Please try again later.");
@@ -804,6 +941,7 @@ const ClientTransaction = () => {
     }
   };
 
+<<<<<<< HEAD
   // --- Main Component JSX ---
   return (
     <>
@@ -815,6 +953,40 @@ const ClientTransaction = () => {
         </h4>
         <hr className="mb-4" />
 
+=======
+  // Conditional rendering
+  if (userRole === null) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" variant="primary" />
+        <p className="fw-semibold mt-2">Checking authorization...</p>
+      </div>
+    );
+  }
+
+  if (userRole !== 'admin' && userRole !== 'manager') {
+    return (
+      <Container className="mt-5 text-center">
+        <Alert variant="danger" className="fw-semibold">
+          <FaExclamationTriangle className="me-2" />
+          You do not have permission to access this page. Redirecting...
+        </Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <>
+      {/* Main container for the form */}
+      <Container className="mt-3 px-3 px-sm-4 px-md-5 py-4 bg-light rounded-4 shadow-sm mx-auto" style={{ maxWidth: '900px' }}>
+        {/* Page Title */}
+        <h4 className="text-center mb-4 fs-3 fw-bold text-danger">
+          <TbTransactionRupee className="fs-1 mb-1 me-2" /> Add Client Transaction
+        </h4>
+        <hr className="mb-4" />
+
+        {/* Loading Clients Spinner */}
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
         {loadingClients && (
           <div className="text-center my-4">
             <Spinner animation="border" variant="primary" />
@@ -822,6 +994,7 @@ const ClientTransaction = () => {
           </div>
         )}
 
+<<<<<<< HEAD
         {!loadingClients && clients.length === 0 && (
           <Alert variant="info" className="text-center fw-semibold">
             <FaExclamationTriangle className="me-2" />
@@ -829,24 +1002,47 @@ const ClientTransaction = () => {
           </Alert>
         )}
 
+=======
+        {/* No Clients Found Alert */}
+        {!loadingClients && clients.length === 0 && (
+          <Alert variant="info" className="text-center fw-semibold">
+            <FaExclamationTriangle className="me-2" />
+            No client accounts found. Please add a client first to create a transaction.
+          </Alert>
+        )}
+
+        {/* Error Alert */}
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
         {error && (
           <Alert variant="danger" dismissible onClose={() => setError('')} className="text-center fw-semibold">
             <FaExclamationTriangle className="me-2" /> {error}
           </Alert>
         )}
 
+<<<<<<< HEAD
+=======
+        {/* Success Alert */}
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
         {success && (
           <Alert variant="success" dismissible onClose={() => setSuccess('')} className="text-center fw-semibold">
             {success}
           </Alert>
         )}
 
+<<<<<<< HEAD
+=======
+        {/* Form */}
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
         {!loadingClients && clients.length > 0 && (
           <Form onSubmit={handleSubmit}>
             {/* Client Information Section */}
             <Card className="mb-4 border-0 shadow-sm">
               <Card.Header className="bg-warning text-dark fw-bold fs-5 d-flex align-items-center">
+<<<<<<< HEAD
                 <FaUserTie className="me-2" /> Your Client Details
+=======
+                <FaUserTie className="me-2" /> Client Details
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
               </Card.Header>
               <Card.Body>
                 <Row>
@@ -864,6 +1060,7 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
+<<<<<<< HEAD
                       {form.clientName.length >= 2 && (
                         <datalist id="client-options">
                           {getUniqueClientNames()
@@ -874,6 +1071,13 @@ const ClientTransaction = () => {
                             ))}
                         </datalist>
                       )}
+=======
+                      <datalist id="client-options">
+                        {clients.map((client) => (
+                          <option key={client._id} value={client.clientName} />
+                        ))}
+                      </datalist>
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                     </Form.Group>
                   </Col>
                   <Col md={6} className="mb-3">
@@ -891,6 +1095,7 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
+<<<<<<< HEAD
                       {form.query_license.length >= 2 && (
                         <datalist id="query-license-options">
                           {getUniqueQueryLicenses()
@@ -901,6 +1106,13 @@ const ClientTransaction = () => {
                             ))}
                         </datalist>
                       )}
+=======
+                      <datalist id="query-license-options">
+                        {clients.filter((client) => client.query_license).map((client) => (
+                          <option key={client._id} value={client.query_license} />
+                        ))}
+                      </datalist>
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                     </Form.Group>
                   </Col>
                   <Col md={6} className="mb-3">
@@ -918,6 +1130,7 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
+<<<<<<< HEAD
                       {form.near_village.length >= 2 && (
                         <datalist id="near-village-options">
                           {getUniqueNearVillages()
@@ -928,6 +1141,13 @@ const ClientTransaction = () => {
                             ))}
                         </datalist>
                       )}
+=======
+                      <datalist id="near-village-options">
+                        {clients.filter((client) => client.near_village).map((client) => (
+                          <option key={client._id} value={client.near_village} />
+                        ))}
+                      </datalist>
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                     </Form.Group>
                   </Col>
                 </Row>
@@ -938,14 +1158,22 @@ const ClientTransaction = () => {
             <Card className="mb-4 border-0 shadow-sm">
               <Card.Header className="bg-success text-white fw-bold fs-5 d-flex align-items-center justify-content-between">
                 <div>
+<<<<<<< HEAD
                   <FontAwesomeIcon icon={faMoneyCheckDollar} className="me-2" /> Your Payments/Stages
+=======
+                  <FontAwesomeIcon icon={faMoneyCheckDollar} className="me-2" /> Client's Stages
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                 </div>
                 <Button
                   variant="light"
                   onClick={addStageClient}
                   className="fw-bold text-dark d-flex align-items-center px-3 py-1 rounded-pill"
                 >
+<<<<<<< HEAD
                   <TbPlus className="me-1" size={25} /> Add Payment
+=======
+                  <TbPlus className="me-1" size={25} /> Add Stage
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                 </Button>
               </Card.Header>
               <Card.Body>
@@ -953,7 +1181,11 @@ const ClientTransaction = () => {
                   <Row key={`client-stage-${index}`} className="mb-3 align-items-center g-2">
                     <Col xs={12} md={6}>
                       <Form.Control
+<<<<<<< HEAD
                         placeholder="Payment Description (e.g., Advance, Installment)"
+=======
+                        placeholder="Client Payment Description (e.g., Advance, Installment)"
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                         value={stage.work}
                         onChange={(e) => updateStageClient(index, 'work', e.target.value)}
                         className="p-2"
@@ -962,7 +1194,11 @@ const ClientTransaction = () => {
                     <Col xs={8} md={4}>
                       <Form.Control
                         type="number"
+<<<<<<< HEAD
                         placeholder="₹ Amount Paid"
+=======
+                        placeholder="₹ Client Paid Amount"
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                         value={stage.amount}
                         onChange={(e) => updateStageClient(index, 'amount', e.target.value)}
                         className="p-2"
@@ -983,6 +1219,7 @@ const ClientTransaction = () => {
               </Card.Body>
             </Card>
 
+<<<<<<< HEAD
             {/* Credit Summary Section - Only Client Paid Amount visible and read-only */}
             <Card className="mb-4 border-0 shadow-sm bg-light">
               <Card.Header className="bg-dark text-white fw-bold fs-5 d-flex align-items-center">
@@ -999,6 +1236,40 @@ const ClientTransaction = () => {
                     className="bg-white fw-bold p-2 text-success"
                   />
                 </Form.Group>
+=======
+            {/* Transaction Summary Section */}
+            <Card className="mb-4 border-0 shadow-sm bg-light">
+              <Card.Header className="bg-dark text-white fw-bold fs-5 d-flex align-items-center">
+                <FaCoins className="me-2" /> Transaction Summary
+              </Card.Header>
+              <Card.Body>
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-bold fs-5">
+                        Total Amount (Client Paid) <FontAwesomeIcon icon={faIndianRupeeSign} />
+                      </Form.Label>
+                      <Form.Control
+                        value={getTotalAmountClient().toFixed(2)}
+                        readOnly
+                        className="bg-white fw-bold p-2 text-success"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-bold fs-5">
+                        Balance <FontAwesomeIcon icon={faIndianRupeeSign} />
+                      </Form.Label>
+                      <Form.Control
+                        value={getRemainingAmount().toFixed(2)}
+                        readOnly
+                        className="bg-white fw-bold p-2 text-primary"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
               </Card.Body>
             </Card>
 
@@ -1013,7 +1284,11 @@ const ClientTransaction = () => {
                 name="description"
                 value={form.description}
                 onChange={handleFormChange}
+<<<<<<< HEAD
                 placeholder="Add any additional notes or details about your payment..."
+=======
+                placeholder="Add any additional notes or details about this transaction..."
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                 className="p-2"
               />
             </Form.Group>
@@ -1029,11 +1304,19 @@ const ClientTransaction = () => {
                 {submitting ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
+<<<<<<< HEAD
                     Submitting...
                   </>
                 ) : (
                   <>
                     <FaSave className="me-2 fs-5" /> Submit Payment
+=======
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FaSave className="me-2 fs-5" /> Save Transaction
+>>>>>>> 4e4c96d554f4c511bf109353a9f8ecab40d8c528
                   </>
                 )}
               </Button>
@@ -1053,4 +1336,4 @@ const ClientTransaction = () => {
   );
 };
 
-export default ClientTransaction;
+export default AddClientTransaction;
