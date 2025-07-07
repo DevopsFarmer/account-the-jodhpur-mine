@@ -24,7 +24,174 @@ const AddExpense = () => {
 
   });
 
-  const [expenseItems, setExpenseItems] = useState([{ description: '', amount: '' }]);
+  const [expenseItems, setExpenseItems] = useState([{
+    id: '',
+    amount: '',
+    description: '',
+    subexpense: [{
+      id: '',
+      amount: '',
+      description: '',
+      addExpense: [{
+        id: '',
+        amount: '',
+        description: ''
+      }]
+    }]
+  }]);
+
+  // Function to add new expense item at any level
+  const addExpense = (level, parentId, subId) => {
+    if (level === 'main') {
+      setExpenseItems(prev => [...prev, {
+        id: '',
+        amount: '',
+        description: '',
+        subexpense: [{
+          id: '',
+          amount: '',
+          description: '',
+          addExpense: [{
+            id: '',
+            amount: '',
+            description: ''
+          }]
+        }]
+      }]);
+    } else if (level === 'sub') {
+      setExpenseItems(prev => prev.map(item => 
+        item.id === parentId 
+          ? {
+              ...item,
+              subexpense: [...item.subexpense, {
+                id: '',
+                amount: '',
+                description: '',
+                addExpense: [{
+                  id: '',
+                  amount: '',
+                  description: ''
+                }]
+              }]
+            }
+          : item
+      ));
+    } else if (level === 'add') {
+      setExpenseItems(prev => prev.map(item => 
+        item.id === parentId 
+          ? {
+              ...item,
+              subexpense: item.subexpense.map(sub => 
+                sub.id === subId
+                  ? {
+                      ...sub,
+                      addExpense: [...sub.addExpense, {
+                        id: '',
+                        amount: '',
+                        description: ''
+                      }]
+                    }
+                  : sub
+              )
+            }
+          : item
+      ));
+    }
+  };
+
+  // Function to update any expense item at any level
+  const updateExpense = (level, parentId, subId, addId, field, value) => {
+    if (level === 'main') {
+      setExpenseItems(prev => prev.map(item => 
+        item.id === parentId 
+          ? {
+              ...item,
+              [field]: value
+            }
+          : item
+      ));
+    } else if (level === 'sub') {
+      setExpenseItems(prev => prev.map(item => 
+        item.id === parentId 
+          ? {
+              ...item,
+              subexpense: item.subexpense.map(sub => 
+                sub.id === subId
+                  ? {
+                      ...sub,
+                      [field]: value
+                    }
+                  : sub
+              )
+            }
+          : item
+      ));
+    } else if (level === 'add') {
+      setExpenseItems(prev => prev.map(item => 
+        item.id === parentId 
+          ? {
+              ...item,
+              subexpense: item.subexpense.map(sub => 
+                sub.id === subId
+                  ? {
+                      ...sub,
+                      addExpense: sub.addExpense.map(add => 
+                        add.id === addId
+                          ? {
+                              ...add,
+                              [field]: value
+                            }
+                          : add
+                      )
+                    }
+                  : sub
+              )
+            }
+          : item
+      ));
+    }
+  };
+
+  // Function to remove main expense item
+  // Function to remove main expense item by index
+  const removeMainExpense = (index) => {
+    setExpenseItems(prev => {
+      const newItems = [...prev];
+      newItems.splice(index, 1);
+      return newItems;
+    });
+  };
+
+  // Function to remove subexpense item
+  const removeSubExpense = (parentId, subIndex) => {
+    setExpenseItems(prev => prev.map(item => 
+      item.id === parentId 
+        ? {
+            ...item,
+            subexpense: item.subexpense.filter((_, i) => i !== subIndex)
+          }
+        : item
+    ));
+  };
+
+  // Function to remove add expense item
+  const removeAddExpense = (parentId, subId, addIndex) => {
+    setExpenseItems(prev => prev.map(item => 
+      item.id === parentId 
+        ? {
+            ...item,
+            subexpense: item.subexpense.map(sub => 
+              sub.id === subId
+                ? {
+                    ...sub,
+                    addExpense: sub.addExpense.filter((_, i) => i !== addIndex)
+                  }
+                : sub
+            )
+          }
+        : item
+    ));
+  };
 
   // Authorization check
   useEffect(() => {
@@ -231,45 +398,163 @@ const AddExpense = () => {
             </h5>
             <Button 
               variant="warning" 
-              onClick={addExpenseItem}
+              onClick={() => {
+                addExpense('main', '', '');
+                // Focus on the description field after adding
+                setTimeout(() => {
+                  const inputs = document.querySelectorAll('input[type="text"][placeholder="Main Item description"]');
+                  const lastInput = inputs[inputs.length - 1];
+                  if (lastInput) {
+                    lastInput.focus();
+                  }
+                }, 100);
+              }}
               className="w-25 fs-5 fw-bold text-capitalize text-center justify-content-center align-items-center d-flex gap-1"
             >
-              <FaPlus className="me-1 fw-bold fs-6" size={30}/> Add Items
+              <FaPlus className="me-1 fw-bold fs-6" size={30}/> Add Main Item
             </Button>
           </div>
 
-          {expenseItems.map((item, index) => (
-            <Row key={index} className="my-2 align-items-center">
-              <Col sm={5} className="pb-3 pb-md-0">
-                <Form.Control
-                  placeholder="Item description"
-                  value={item.description}
-                  onChange={(e) => updateExpenseItem(index, 'description', e.target.value)}
-                />
-              </Col>
-              <Col sm={4} className="pb-3 pb-md-0">
-                <InputGroup>
-                  <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
+          {expenseItems.map((mainItem, mainIndex) => (
+            <div key={mainItem.id} className="border rounded mb-3 p-3">
+              <Row className="my-2 align-items-center">
+                <Col sm={5} className="pb-3 pb-md-0">
                   <Form.Control
-                    type="number"
-                    placeholder="₹ Amount"
-                    value={item.amount}
-                    onChange={(e) => updateExpenseItem(index, 'amount', e.target.value)}
-                    min="0"
+                    placeholder="Main Item description"
+                    value={mainItem.description}
+                    onChange={(e) => updateExpense('main', mainItem.id, '', '', 'description', e.target.value)}
                   />
-                </InputGroup>
-              </Col>
-              <Col sm={3} className="pb-3 pb-md-0">
-                <Button
-                  variant="danger"
-                  onClick={() => removeExpenseItem(index)}
-                  disabled={expenseItems.length === 1}
-                  className="w-75 fw-bold text-white"
-                >
-                  <FaTrash className="me-1" /> Remove
-                </Button>
-              </Col>
-            </Row>
+                </Col>
+                <Col sm={4} className="pb-3 pb-md-0">
+                  <InputGroup>
+                    <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
+                    <Form.Control
+                      type="number"
+                      placeholder="₹ Amount"
+                      value={mainItem.amount}
+                      onChange={(e) => updateExpense('main', mainItem.id, '', '', 'amount', e.target.value)}
+                      min="0"
+                    />
+                  </InputGroup>
+                </Col>
+                <Col sm={3} className="pb-3 pb-md-0 d-flex gap-2">
+                  <Button
+                    variant="warning"
+                    onClick={() => {
+                      addExpense('sub', mainItem.id, '');
+                      // Focus on the sub item description after adding
+                      setTimeout(() => {
+                        const inputs = document.querySelectorAll('input[type="text"][placeholder="Sub Item description"]');
+                        const lastInput = inputs[inputs.length - 1];
+                        if (lastInput) {
+                          lastInput.focus();
+                        }
+                      }, 100);
+                    }}
+                    className="w-50 fw-bold text-white"
+                  >
+                    <FaPlus className="me-1" /> Add Sub Item
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => removeMainExpense(mainIndex)}
+                    disabled={expenseItems.length === 1}
+                    className="w-50 fw-bold text-white"
+                  >
+                    <FaTrash className="me-1" /> Remove
+                  </Button>
+                </Col>
+              </Row>
+
+              {/* Subexpenses */}
+              {mainItem.subexpense.map((subItem, subIndex) => (
+                <div key={subItem.id} className="border rounded mb-3 p-3 ms-3">
+                  <Row className="my-2 align-items-center">
+                    <Col sm={5} className="pb-3 pb-md-0">
+                      <Form.Control
+                        placeholder="Sub Item description"
+                        value={subItem.description}
+                        onChange={(e) => updateExpense('sub', mainItem.id, subItem.id, '', 'description', e.target.value)}
+                      />
+                    </Col>
+                    <Col sm={4} className="pb-3 pb-md-0">
+                      <InputGroup>
+                        <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
+                        <Form.Control
+                          type="number"
+                          placeholder="₹ Amount"
+                          value={subItem.amount}
+                          onChange={(e) => updateExpense('sub', mainItem.id, subItem.id, '', 'amount', e.target.value)}
+                          min="0"
+                        />
+                      </InputGroup>
+                    </Col>
+                    <Col sm={3} className="pb-3 pb-md-0 d-flex gap-2">
+                      <Button
+                        variant="warning"
+                        onClick={() => {
+                          addExpense('add', mainItem.id, subItem.id);
+                          // Focus on the add expense description after adding
+                          setTimeout(() => {
+                            const inputs = document.querySelectorAll('input[type="text"][placeholder="Additional Expense description"]');
+                            const lastInput = inputs[inputs.length - 1];
+                            if (lastInput) {
+                              lastInput.focus();
+                            }
+                          }, 100);
+                        }}
+                        className="w-50 fw-bold text-white"
+                      >
+                        <FaPlus className="me-1" /> Add Expense
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => removeSubExpense(mainItem.id, subIndex)}
+                        className="w-50 fw-bold text-white"
+                      >
+                        <FaTrash className="me-1" /> Remove
+                      </Button>
+                    </Col>
+                  </Row>
+
+                  {/* Add Expenses */}
+                  {subItem.addExpense.map((addExpense, addIndex) => (
+                    <div key={addExpense.id} className="border rounded mb-3 p-3 ms-3">
+                      <Row className="my-2 align-items-center">
+                        <Col sm={5} className="pb-3 pb-md-0">
+                          <Form.Control
+                            placeholder="Additional Expense description"
+                            value={addExpense.description}
+                            onChange={(e) => updateExpense('add', mainItem.id, subItem.id, addExpense.id, 'description', e.target.value)}
+                          />
+                        </Col>
+                        <Col sm={4} className="pb-3 pb-md-0">
+                          <InputGroup>
+                            <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
+                            <Form.Control
+                              type="number"
+                              placeholder="₹ Amount"
+                              value={addExpense.amount}
+                              onChange={(e) => updateExpense('add', mainItem.id, subItem.id, addExpense.id, 'amount', e.target.value)}
+                              min="0"
+                            />
+                          </InputGroup>
+                        </Col>
+                        <Col sm={3} className="pb-3 pb-md-0">
+                          <Button
+                            variant="danger"
+                            onClick={() => removeAddExpense(mainItem.id, subItem.id, addIndex)}
+                            className="w-100 fw-bold text-white"
+                          >
+                            <FaTrash className="me-1" /> Remove
+                          </Button>
+                        </Col>
+                      </Row>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           ))}
 
           {/* Financial Summary */}
