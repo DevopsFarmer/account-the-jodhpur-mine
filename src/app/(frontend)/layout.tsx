@@ -6,6 +6,12 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import Login from './page'
 
+// Initialize Bootstrap on client-side
+if (typeof window !== 'undefined') {
+  // @ts-expect-error
+  import('bootstrap/dist/js/bootstrap.bundle.min');
+}
+
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',
   title: 'Payload Blank Template',
