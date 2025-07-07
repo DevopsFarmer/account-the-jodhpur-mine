@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { headers as getHeaders } from 'next/headers.js'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import Login from './login/page'
+import Login from './page'
 
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',

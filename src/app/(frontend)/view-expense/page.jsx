@@ -316,13 +316,43 @@ const ViewExpense = () => {
                 {selectedExpense.addExpenseItems?.length > 0 && (
                   <div className="pt-3 border-top border-2 mt-3">
                     <h6 className="text-primary">Expense Items:</h6>
-                    <ul className="ps-3">
-                      {selectedExpense.addExpenseItems.map((item, idx) => (
-                        <li key={idx} className="fw-semibold text-capitalize">
-                          {item.description} - <FaRupeeSign /> {item.amount?.toFixed(2) || '0.00'}
-                        </li>
+                    <div className="ps-3">
+                      {selectedExpense.addExpenseItems.map((mainItem, mainIdx) => (
+                        <div key={mainIdx} className="mb-3">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span className="fw-semibold text-capitalize">
+                              {mainItem.description} - <FaRupeeSign /> {mainItem.amount?.toFixed(2) || '0.00'}
+                            </span>
+                          </div>
+                          
+                          {mainItem.subexpense?.length > 0 && (
+                            <div className="ms-4 border-start ps-3">
+                              {mainItem.subexpense.map((subItem, subIdx) => (
+                                <div key={subIdx} className="mb-2">
+                                  <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <span className="text-capitalize">
+                                      {subItem.description} - <FaRupeeSign /> {subItem.amount?.toFixed(2) || '0.00'}
+                                    </span>
+                                  </div>
+                                  
+                                  {subItem.addExpense?.length > 0 && (
+                                    <div className="ms-4 border-start ps-3">
+                                      {subItem.addExpense.map((addItem, addIdx) => (
+                                        <div key={addIdx} className="mb-1">
+                                          <span className="text-muted">
+                                            {addItem.description} - <FaRupeeSign /> {addItem.amount?.toFixed(2) || '0.00'}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 )}
               </Card.Body>

@@ -21,42 +21,23 @@ const AddExpense = () => {
   const [form, setForm] = useState({
     name: '',
     initialBalance: '',
-
   });
 
   const [expenseItems, setExpenseItems] = useState([{
     id: '',
     amount: '',
     description: '',
-    subexpense: [{
-      id: '',
-      amount: '',
-      description: '',
-      addExpense: [{
-        id: '',
-        amount: '',
-        description: ''
-      }]
-    }]
+    subexpense: []
   }]);
 
   // Function to add new expense item at any level
   const addExpense = (level, parentId, subId) => {
     if (level === 'main') {
       setExpenseItems(prev => [...prev, {
-        id: '',
+        id: Date.now().toString(),
         amount: '',
         description: '',
-        subexpense: [{
-          id: '',
-          amount: '',
-          description: '',
-          addExpense: [{
-            id: '',
-            amount: '',
-            description: ''
-          }]
-        }]
+        subexpense: []
       }]);
     } else if (level === 'sub') {
       setExpenseItems(prev => prev.map(item => 
@@ -64,14 +45,10 @@ const AddExpense = () => {
           ? {
               ...item,
               subexpense: [...item.subexpense, {
-                id: '',
+                id: Date.now().toString(),
                 amount: '',
                 description: '',
-                addExpense: [{
-                  id: '',
-                  amount: '',
-                  description: ''
-                }]
+                addExpense: []
               }]
             }
           : item
@@ -86,7 +63,7 @@ const AddExpense = () => {
                   ? {
                       ...sub,
                       addExpense: [...sub.addExpense, {
-                        id: '',
+                        id: Date.now().toString(),
                         amount: '',
                         description: ''
                       }]
@@ -99,7 +76,7 @@ const AddExpense = () => {
     }
   };
 
-  // Function to update any expense item at any level
+  // Function to update expense item
   const updateExpense = (level, parentId, subId, addId, field, value) => {
     if (level === 'main') {
       setExpenseItems(prev => prev.map(item => 
@@ -337,277 +314,217 @@ const AddExpense = () => {
   }
 
   return (
-    <>
+    <div className="min-vh-100">
       <Header />
-      <Container className="mt-3 px-3 px-sm-4 py-4 bg-light rounded-4 shadow-sm w-100 w-md-75 mx-auto">
-        <h4 className="text-center mb-4 fs-4 fw-bold text-danger">
-          <TbTransactionRupee className="fs-1 mb-1" /> Add New Expense
-        </h4>
-
-        {error && (
-          <Alert variant="danger" className="text-center fw-semibold">
-            <FaExclamationTriangle className="me-2" /> {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert variant="success" className="text-center fw-semibold">
-            {success}
-          </Alert>
-        )}
-
-        <Form onSubmit={handleSubmit}>
-          {/* Expense Name */}
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-bold fs-5">
-              Expense Name <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Control
-              name="name"
-              value={form.name}
-              onChange={(e) => setForm({...form, name: e.target.value})}
-              placeholder="Enter expense name"
-              required
-            />
-          </Form.Group>
-
-          {/* Initial Balance */}
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-bold fs-5">
-              Initial Balance <span className="text-danger">*</span>
-            </Form.Label>
-            <InputGroup>
-              <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
-              <Form.Control
-                type="number"
-                name="initialBalance"
-                value={form.initialBalance}
-                onChange={(e) => setForm({...form, initialBalance: e.target.value})}
-                placeholder="Enter initial balance"
-                required
-                min="0"
-              />
-            </InputGroup>
-          </Form.Group>
-
-          {/* Expense Items Section - Structured like Working Stages */}
-          <div className="d-flex justify-content-between align-items-center my-4">
-            <h5 className="fw-bold text-dark fs-5">
-              <FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" />
-              Expense Items
-            </h5>
-            <Button 
-              variant="warning" 
-              onClick={() => {
-                addExpense('main', '', '');
-                // Focus on the description field after adding
-                setTimeout(() => {
-                  const inputs = document.querySelectorAll('input[type="text"][placeholder="Main Item description"]');
-                  const lastInput = inputs[inputs.length - 1];
-                  if (lastInput) {
-                    lastInput.focus();
-                  }
-                }, 100);
-              }}
-              className="w-25 fs-5 fw-bold text-capitalize text-center justify-content-center align-items-center d-flex gap-1"
-            >
-              <FaPlus className="me-1 fw-bold fs-6" size={30}/> Add Main Item
-            </Button>
-          </div>
-
-          {expenseItems.map((mainItem, mainIndex) => (
-            <div key={mainItem.id} className="border rounded mb-3 p-3">
-              <Row className="my-2 align-items-center">
-                <Col sm={5} className="pb-3 pb-md-0">
-                  <Form.Control
-                    placeholder="Main Item description"
-                    value={mainItem.description}
-                    onChange={(e) => updateExpense('main', mainItem.id, '', '', 'description', e.target.value)}
-                  />
-                </Col>
-                <Col sm={4} className="pb-3 pb-md-0">
-                  <InputGroup>
-                    <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
-                    <Form.Control
-                      type="number"
-                      placeholder="₹ Amount"
-                      value={mainItem.amount}
-                      onChange={(e) => updateExpense('main', mainItem.id, '', '', 'amount', e.target.value)}
-                      min="0"
-                    />
-                  </InputGroup>
-                </Col>
-                <Col sm={3} className="pb-3 pb-md-0 d-flex gap-2">
-                  <Button
-                    variant="warning"
-                    onClick={() => {
-                      addExpense('sub', mainItem.id, '');
-                      // Focus on the sub item description after adding
-                      setTimeout(() => {
-                        const inputs = document.querySelectorAll('input[type="text"][placeholder="Sub Item description"]');
-                        const lastInput = inputs[inputs.length - 1];
-                        if (lastInput) {
-                          lastInput.focus();
-                        }
-                      }, 100);
-                    }}
-                    className="w-50 fw-bold text-white"
-                  >
-                    <FaPlus className="me-1" /> Add Sub Item
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => removeMainExpense(mainIndex)}
-                    disabled={expenseItems.length === 1}
-                    className="w-50 fw-bold text-white"
-                  >
-                    <FaTrash className="me-1" /> Remove
-                  </Button>
+      <Container className="py-4">
+        <Row className="mb-4">
+          <Col>
+            <h2 className="text-center mb-4">Add Expense</h2>
+            {error && (
+              <Alert variant="danger" className="mb-3">
+                {error}
+              </Alert>
+            )}
+            {success && (
+              <Alert variant="success" className="mb-3">
+                {success}
+              </Alert>
+            )}
+            <Form onSubmit={handleSubmit}>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="name">
+                    <Form.Label>Expense Name</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text>
+                        <FaRupeeSign />
+                      </InputGroup.Text>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter expense name"
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        required
+                      />
+                    </InputGroup>
+                  </Form.Group>
                 </Col>
               </Row>
 
-              {/* Subexpenses */}
-              {mainItem.subexpense.map((subItem, subIndex) => (
-                <div key={subItem.id} className="border rounded mb-3 p-3 ms-3">
-                  <Row className="my-2 align-items-center">
-                    <Col sm={5} className="pb-3 pb-md-0">
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="initialBalance">
+                    <Form.Label>Initial Balance</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text>
+                        <FaRupeeSign />
+                      </InputGroup.Text>
                       <Form.Control
-                        placeholder="Sub Item description"
-                        value={subItem.description}
-                        onChange={(e) => updateExpense('sub', mainItem.id, subItem.id, '', 'description', e.target.value)}
+                        type="number"
+                        placeholder="Enter initial balance"
+                        value={form.initialBalance}
+                        onChange={(e) => setForm({ ...form, initialBalance: e.target.value })}
+                        required
                       />
-                    </Col>
-                    <Col sm={4} className="pb-3 pb-md-0">
-                      <InputGroup>
-                        <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
-                        <Form.Control
-                          type="number"
-                          placeholder="₹ Amount"
-                          value={subItem.amount}
-                          onChange={(e) => updateExpense('sub', mainItem.id, subItem.id, '', 'amount', e.target.value)}
-                          min="0"
-                        />
-                      </InputGroup>
-                    </Col>
-                    <Col sm={3} className="pb-3 pb-md-0 d-flex gap-2">
-                      <Button
-                        variant="warning"
-                        onClick={() => {
-                          addExpense('add', mainItem.id, subItem.id);
-                          // Focus on the add expense description after adding
-                          setTimeout(() => {
-                            const inputs = document.querySelectorAll('input[type="text"][placeholder="Additional Expense description"]');
-                            const lastInput = inputs[inputs.length - 1];
-                            if (lastInput) {
-                              lastInput.focus();
-                            }
-                          }, 100);
-                        }}
-                        className="w-50 fw-bold text-white"
-                      >
-                        <FaPlus className="me-1" /> Add Expense
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => removeSubExpense(mainItem.id, subIndex)}
-                        className="w-50 fw-bold text-white"
-                      >
-                        <FaTrash className="me-1" /> Remove
-                      </Button>
-                    </Col>
-                  </Row>
+                    </InputGroup>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-                  {/* Add Expenses */}
-                  {subItem.addExpense.map((addExpense, addIndex) => (
-                    <div key={addExpense.id} className="border rounded mb-3 p-3 ms-3">
-                      <Row className="my-2 align-items-center">
-                        <Col sm={5} className="pb-3 pb-md-0">
+              <h3 className="mt-4">Expense Items</h3>
+              <div className="border rounded p-3">
+                {expenseItems.map((item, index) => (
+                  <div key={item.id} className="mb-3">
+                    <InputGroup className="mb-2">
+                      <InputGroup.Text>
+                        <FaRupeeSign />
+                      </InputGroup.Text>
+                      <Form.Control
+                        type="number"
+                        placeholder="Amount"
+                        value={item.amount}
+                        onChange={(e) => updateExpense('main', item.id, '', '', 'amount', e.target.value)}
+                        required
+                      />
+                      <InputGroup.Text>
+                        <FaPlus />
+                      </InputGroup.Text>
+                      <Form.Control
+                        type="text"
+                        placeholder="Description"
+                        value={item.description}
+                        onChange={(e) => updateExpense('main', item.id, '', '', 'description', e.target.value)}
+                        required
+                      />
+                      <Button
+                        variant="outline-danger"
+                        onClick={() => removeExpenseItem(index)}
+                        className="ms-2"
+                      >
+                        <FaTrash />
+                      </Button>
+                    </InputGroup>
+
+                    {item.subexpense.map((sub, subIndex) => (
+                      <div key={sub.id} className="ms-4 border-start ps-3">
+                        <InputGroup className="mb-2">
+                          <InputGroup.Text>
+                            <FaRupeeSign />
+                          </InputGroup.Text>
                           <Form.Control
-                            placeholder="Additional Expense description"
-                            value={addExpense.description}
-                            onChange={(e) => updateExpense('add', mainItem.id, subItem.id, addExpense.id, 'description', e.target.value)}
+                            type="number"
+                            placeholder="Sub Amount"
+                            value={sub.amount}
+                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'amount', e.target.value)}
+                            required
                           />
-                        </Col>
-                        <Col sm={4} className="pb-3 pb-md-0">
-                          <InputGroup>
-                            <InputGroup.Text><FaRupeeSign /></InputGroup.Text>
-                            <Form.Control
-                              type="number"
-                              placeholder="₹ Amount"
-                              value={addExpense.amount}
-                              onChange={(e) => updateExpense('add', mainItem.id, subItem.id, addExpense.id, 'amount', e.target.value)}
-                              min="0"
-                            />
-                          </InputGroup>
-                        </Col>
-                        <Col sm={3} className="pb-3 pb-md-0">
+                          <InputGroup.Text>
+                            <FaPlus />
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="text"
+                            placeholder="Sub Description"
+                            value={sub.description}
+                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'description', e.target.value)}
+                            required
+                          />
                           <Button
-                            variant="danger"
-                            onClick={() => removeAddExpense(mainItem.id, subItem.id, addIndex)}
-                            className="w-100 fw-bold text-white"
+                            variant="outline-danger"
+                            onClick={() => removeSubExpense(item.id, subIndex)}
+                            className="ms-2"
                           >
-                            <FaTrash className="me-1" /> Remove
+                            <FaTrash />
                           </Button>
-                        </Col>
-                      </Row>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ))}
+                        </InputGroup>
 
-          {/* Financial Summary */}
-          <Row className="my-4 border-top pt-3">
-            <Col sm={6} className="pb-3 pb-md-0">
-              <Form.Label className="fw-bold fs-5">Total Expense (<FaRupeeSign />)</Form.Label>
-              <Form.Control 
-                value={totalExpense.toFixed(2)} 
-                readOnly 
-                className={`bg-white fw-bold ${totalExpense < 0 ? 'text-dark' : 'text-danger'}`}
-              />
-            </Col>
-            <Col sm={6} className="pb-3 pb-md-0">
-              <Form.Label className="fw-bold fs-5">Remaining Balance (<FaRupeeSign />)</Form.Label>
-              <Form.Control 
-                value={remainingAmount.toFixed(2)} 
-                readOnly 
-                className={`bg-white fw-bold ${remainingAmount < 0 ? 'text-dark' : 'text-success'}`}
-              />
-            </Col>
-          </Row>
+                        {sub.addExpense.map((add, addIndex) => (
+                          <div key={add.id} className="ms-4 border-start ps-3">
+                            <InputGroup className="mb-2">
+                              <InputGroup.Text>
+                                <FaRupeeSign />
+                              </InputGroup.Text>
+                              <Form.Control
+                                type="number"
+                                placeholder="Additional Amount"
+                                value={add.amount}
+                                onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'amount', e.target.value)}
+                                required
+                              />
+                              <InputGroup.Text>
+                                <FaPlus />
+                              </InputGroup.Text>
+                              <Form.Control
+                                type="text"
+                                placeholder="Additional Description"
+                                value={add.description}
+                                onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'description', e.target.value)}
+                                required
+                              />
+                              <Button
+                                variant="outline-danger"
+                                onClick={() => removeAddExpense(item.id, sub.id, addIndex)}
+                                className="ms-2"
+                              >
+                                <FaTrash />
+                              </Button>
+                            </InputGroup>
+                          </div>
+                        ))}
 
-          {/* Action Buttons */}
-          <div className="text-center">
-            <Button 
-              type="submit" 
-              variant="success" 
-              className="fw-bold px-4 py-2 me-2" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  Saving Expense...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faSaveIcon} className="me-1 fs-5" /> Save Expense
-                </>
-              )}
-            </Button>
-            <Button 
-              variant="secondary" 
-              className="px-4 py-2 fw-bold" 
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
-              Reset Form
-            </Button>
-          </div>
-        </Form>
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => addExpense('add', item.id, sub.id)}
+                          className="ms-4 mb-2"
+                        >
+                          <FaPlus /> Add Additional Expense
+                        </Button>
+                      </div>
+                    ))}
+
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => addExpense('sub', item.id, '')}
+                      className="ms-4 mb-2"
+                    >
+                      <FaPlus /> Add Sub Expense
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline-primary"
+                  onClick={() => addExpense('main', '', '')}
+                  className="mt-3"
+                >
+                  <FaPlus /> Add Main Expense
+                </Button>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="mt-3"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                  ) : (
+                    <FontAwesomeIcon icon={faSaveIcon} className="me-2" />
+                  )}
+                  Save Expense
+                </Button>
+              </div>
+            </Form>
+          </Col>
+        </Row>
       </Container>
-    </>
+    </div>
   );
 };
 
