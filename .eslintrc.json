@@ -1,0 +1,29 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "@typescript-eslint/no-explicit-any": [
+      "error",
+      {
+        "ignoreRestArgs": true,
+        "ignoreTypeArguments": true,
+        "ignoreTypeParameters": true,
+        "fixToUnknown": true,
+        "allowInClassFields": true,
+        "allowInIndexSignatures": true,
+        "allowInInterfaceDeclarations": true,
+        "allowInModuleDeclarations": true,
+        "allowInTypeDeclarations": true,
+        "allowInTypeParameters": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/types/bootstrap.d.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/ban-ts-comment": "off"
+      }
+    }
+  ]
+}

@@ -201,6 +201,7 @@ export interface ClientTransaction {
     | {
         workingStageclient?: string | null;
         workingDescriptionclient?: string | null;
+        workDate?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -280,6 +281,20 @@ export interface Expense {
     | {
         amount?: number | null;
         description?: string | null;
+        subexpense?:
+          | {
+              amount?: number | null;
+              description?: string | null;
+              addExpense?:
+                | {
+                    amount?: number | null;
+                    description?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -439,6 +454,7 @@ export interface ClientTransactionSelect<T extends boolean = true> {
     | {
         workingStageclient?: T;
         workingDescriptionclient?: T;
+        workDate?: T;
         id?: T;
       };
   totalAmount?: T;
@@ -496,6 +512,20 @@ export interface ExpenseSelect<T extends boolean = true> {
     | {
         amount?: T;
         description?: T;
+        subexpense?:
+          | T
+          | {
+              amount?: T;
+              description?: T;
+              addExpense?:
+                | T
+                | {
+                    amount?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
         id?: T;
       };
   expenseCreatedAt?: T;

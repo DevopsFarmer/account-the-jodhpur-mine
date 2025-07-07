@@ -33,6 +33,32 @@ export const Expense: CollectionConfig = {
         type: 'text',
        
       },
+      {name:'subexpense',type:'array',
+        fields:[
+          {
+            name:'amount',
+            type:'number',
+          },
+          {
+            name:'description',
+            type:'text',
+          },
+         {
+          name:'addExpense',
+          type:'array',
+          fields:[
+            {
+              name:'amount',
+              type:'number',
+            },
+            {
+              name:'description',
+              type:'text',
+            }
+          ]
+         }
+        ]
+      }
     ],
    },
 
