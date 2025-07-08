@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import { FaXmark } from "react-icons/fa6";
-import locationData from '../../../India-state-city-subDistrict-village.json'; 
+import locationData from '../../../location.json'; 
 
 const AddClientAccount = ({ isGuest = false }) => {
   const router = useRouter();
