@@ -10,7 +10,7 @@ export const ClientTransactions: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      async ({ data, req, operation }) => {
+      async ({ data, operation }) => {
         if (operation === 'create') {
           // Generate a unique voucher number in format: V-YYYYMMDD-XXXXX
           const date = new Date();

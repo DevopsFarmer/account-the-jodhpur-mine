@@ -7,7 +7,6 @@ import axios from "axios";
 import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle, } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 
-// Helper function to format date as DD/MM/YYYY
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -16,7 +15,6 @@ const formatDate = (date) =>
     timeZone: "Asia/Kolkata",
   });
 
-// Helper function to format time as HH:MM:SS AM/PM
 const formatTime = (date) =>
   new Date(date).toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -29,27 +27,23 @@ const formatTime = (date) =>
 const ViewClientTransaction = () => {
   const router = useRouter();
 
-  // States for authentication, data, filters, modals, and UI
   const [userRole, setUserRole] = useState(null);
-  const [allTransactions, setAllTransactions] = useState([]); // All transactions fetched
-  const [filteredTransactions, setFilteredTransactions] = useState([]); // Transactions after applying filters
+  const [allTransactions, setAllTransactions] = useState([]); 
+  const [filteredTransactions, setFilteredTransactions] = useState([]); 
   const [searchName, setSearchName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(""); // Error message displayed using Alert
+  const [error, setError] = useState(""); 
 
-  // States for individual button loading
   const [paymentStatusLoadingId, setPaymentStatusLoadingId] = useState(null);
-  const [workStatusLoadingId, setWorkStatusLoadingId] = useState(null); // Stores { transactionId, stageIndex }
+  const [workStatusLoadingId, setWorkStatusLoadingId] = useState(null); 
 
-  // Pagination states
-  const itemsPerPage = 10; // Number of transactions per page is 10
-  const [currentPage, setCurrentPage] = useState(1); // Current page number
+  const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1); 
 
-  // Validate user role using localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user");
 
@@ -74,7 +68,6 @@ const ViewClientTransaction = () => {
     setIsLoading(false);
   }, []);
 
-  // Fetch client transactions if authorized
   useEffect(() => {
     const fetchData = async () => {
       if (userRole === "admin" || userRole === "manager") {
@@ -119,7 +112,6 @@ const ViewClientTransaction = () => {
     fetchData();
   }, [userRole]);
 
-  // Function to apply filters by name and date range
   const applyFilters = (name, start, end) => {
     const searchTerm = name.toLowerCase();
     const startDateObj = start ? new Date(start) : null;
@@ -141,51 +133,43 @@ const ViewClientTransaction = () => {
     });
 
     setFilteredTransactions(results);
-    setCurrentPage(1); // Reset to first page after applying filters
+    setCurrentPage(1); 
   };
 
-  // Handle search input change
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchName(value);
     applyFilters(value, startDate, endDate);
   };
 
-  // Handle start date change
   const handleStartDateChange = (e) => {
     const value = e.target.value;
     setStartDate(value);
     applyFilters(searchName, value, endDate);
   };
 
-  // Handle end date change
   const handleEndDateChange = (e) => {
     const value = e.target.value;
     setEndDate(value);
     applyFilters(searchName, startDate, value);
   };
 
-  // Function to download PDF
   const downloadPDF = async () => {
     if (typeof window === "undefined" || !selectedTransaction) return;
 
     try {
-      // Dynamically import html2pdf only on the client side
       const html2pdf = (await import("html2pdf.js")).default;
 
       const element = document.getElementById("pdf-content");
       if (!element) return;
 
-      // Create a new div to hold the content for PDF generation
       const pdfContentWrapper = document.createElement("div");
       pdfContentWrapper.innerHTML = element.innerHTML;
 
-      // Apply inline styles to the wrapper for consistent layout
       pdfContentWrapper.style.padding = "20px";
       pdfContentWrapper.style.fontFamily = "Arial, sans-serif";
       pdfContentWrapper.style.fontSize = "12px";
 
-      // Adjust specific elements within the wrapper for PDF
       const tables = pdfContentWrapper.querySelectorAll("table");
       tables.forEach((table) => {
         table.style.width = "100%";
@@ -226,30 +210,24 @@ const ViewClientTransaction = () => {
     }
   };
 
-  // Toggle payment status function
   const togglePaymentStatus = async (id) => {
-    setPaymentStatusLoadingId(id); // Set loading for this transaction
+    setPaymentStatusLoadingId(id); 
     try {
-      // Find the transaction to get current status
       const transactionToUpdate = allTransactions.find((txn) => txn.id === id);
       if (!transactionToUpdate) return;
 
       const newStatus =
         transactionToUpdate.paymentstatus === "pending" ? "paid" : "pending";
 
-      // Update on the server
       await fetch(`/api/client-transaction/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentstatus: newStatus }),
       });
 
-      // Update the allTransactions state
       const updatedAllTransactions = allTransactions.map((txn) =>
         txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
       );
-
-      // Update the filteredTransactions state while preserving the current filter
       const updatedFilteredTransactions = filteredTransactions.map((txn) =>
         txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
       );
@@ -257,7 +235,6 @@ const ViewClientTransaction = () => {
       setAllTransactions(updatedAllTransactions);
       setFilteredTransactions(updatedFilteredTransactions);
 
-      // Update selectedTransaction if it's the one being modified
       if (selectedTransaction && selectedTransaction.id === id) {
         setSelectedTransaction({ ...selectedTransaction, paymentstatus: newStatus });
       }
@@ -265,24 +242,19 @@ const ViewClientTransaction = () => {
       console.error("Error updating payment status:", error);
       setError("Failed to update payment status. Please try again.");
     } finally {
-      setPaymentStatusLoadingId(null); // Clear loading
+      setPaymentStatusLoadingId(null); 
     }
   };
 
-  // Toggle work status function for individual work stages
   const toggleWorkStatus = async (transactionId, stageIndex) => {
-    setWorkStatusLoadingId({ transactionId, stageIndex }); // Set loading for this specific stage
+    setWorkStatusLoadingId({ transactionId, stageIndex }); 
     try {
-      // Find the transaction
       const transactionToUpdate = allTransactions.find(
         (txn) => txn.id === transactionId
       );
       if (!transactionToUpdate || !transactionToUpdate.workingStage) return;
-
-      // Create a copy of the working stages array
       const updatedWorkingStage = [...transactionToUpdate.workingStage];
 
-      // Toggle the status of the specific stage
       const currentStatus = updatedWorkingStage[stageIndex]?.workstatus || "incomplete";
       const newStatus = currentStatus === "incomplete" ? "complete" : "incomplete";
 
@@ -291,19 +263,15 @@ const ViewClientTransaction = () => {
         workstatus: newStatus,
       };
 
-      // Update on the server
       await fetch(`/api/client-transaction/${transactionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workingStage: updatedWorkingStage }),
       });
 
-      // Update the allTransactions state
       const updatedAllTransactions = allTransactions.map((txn) =>
         txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
       );
-
-      // Update the filteredTransactions state
       const updatedFilteredTransactions = filteredTransactions.map((txn) =>
         txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
       );
@@ -311,7 +279,6 @@ const ViewClientTransaction = () => {
       setAllTransactions(updatedAllTransactions);
       setFilteredTransactions(updatedFilteredTransactions);
 
-      // Update selectedTransaction if it's the one being modified
       if (selectedTransaction && selectedTransaction.id === transactionId) {
         setSelectedTransaction({ ...selectedTransaction, workingStage: updatedWorkingStage });
       }
@@ -319,11 +286,10 @@ const ViewClientTransaction = () => {
       console.error("Error updating work status:", error);
       setError("Failed to update work status. Please try again.");
     } finally {
-      setWorkStatusLoadingId(null); // Clear loading
+      setWorkStatusLoadingId(null); 
     }
   };
 
-  // Get current page items for display
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentTransactions = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);

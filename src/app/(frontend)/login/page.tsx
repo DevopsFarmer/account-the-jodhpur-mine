@@ -9,8 +9,7 @@ import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa'
 import '../styles.css';
 
 const LoginForm = () => {
-  const router = useRouter();
-  // User input states
+ 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
