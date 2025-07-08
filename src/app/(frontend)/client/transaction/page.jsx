@@ -5,7 +5,7 @@
 // Import necessary React hooks and components from 'react' and 'next/navigation'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-
+import Jodhpur from './Jodhpur.json';
 // Import Bootstrap components for layout, forms, buttons, alerts, and spinners
 import { Container, Form, Button, Row, Col, Alert, Spinner, Card } from 'react-bootstrap';
 
@@ -223,7 +223,7 @@ const ClientTransaction = () => {
         setTimeout(() => {
           handleReset();
           // Redirect all users to the main dashboard
-          router.push('/dashboard');
+          router.push('/');
         }, 1000);
       } else {
         const result = await res.json();
@@ -343,6 +343,7 @@ const ClientTransaction = () => {
                         <FaMapMarkerAlt className="me-1" /> Village
                         <span className="text-danger ms-1">*</span>
                       </Form.Label>
+
                       <Form.Control
                         list="near-village-options"
                         name="near_village"
@@ -352,11 +353,18 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
-                      {form.near_village.length >= 2 && (
+
+                      {(form.near_village.length >= 2 || Jodhpur.length > 0) && (
                         <datalist id="near-village-options">
-                          {getUniqueNearVillages()
-                            .filter(name => name.toLowerCase().includes(form.near_village.toLowerCase()))
-                            .slice(0, 10)
+                          {[
+                            ...new Set([
+                              ...Jodhpur,
+                              ...getUniqueNearVillages().filter(name =>
+                                name.toLowerCase().includes(form.near_village.toLowerCase())
+                              ),
+                            ]),
+                          ]
+                            .slice(0, 15) // Limit total suggestions
                             .map((village, index) => (
                               <option key={`village-${index}`} value={village} />
                             ))}
@@ -364,6 +372,7 @@ const ClientTransaction = () => {
                       )}
                     </Form.Group>
                   </Col>
+
                 </Row>
               </Card.Body>
             </Card>
@@ -499,4 +508,4 @@ const ClientTransaction = () => {
   );
 };
 
-export default AddClientTransaction;
+export default ClientTransaction;

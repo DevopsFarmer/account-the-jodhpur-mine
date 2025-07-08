@@ -1,8 +1,4 @@
-
-
-
-
-"use client"; 
+"use client"; // Enables client-side features like localStorage and router
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card } from "react-bootstrap";
 import { useRouter } from "next/navigation";
@@ -362,6 +358,7 @@ const ViewVendorTransaction = () => {
 
   return (
     <>
+      
       <Container className="mt-4 mb-5">
         <h4 className="text-center mb-4">
           <FaClipboard /> View All Vendor Transactions

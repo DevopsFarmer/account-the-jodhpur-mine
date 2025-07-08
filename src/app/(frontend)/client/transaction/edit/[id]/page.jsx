@@ -277,7 +277,7 @@ const EditClientTransaction = () => {
         setSuccess("Client transaction updated successfully!");
         setTimeout(() => {
           setSuccess("");
-          router.push("/viewclient-transaction");
+          router.push("/client/transaction/view");
         }, 1000);
       } else {
         const errData = await res.json();
@@ -525,7 +525,7 @@ const EditClientTransaction = () => {
             <Button
               variant="secondary"
               className="px-4 fw-bold rounded-3"
-              onClick={() => router.push("/viewclient-transaction")}
+              onClick={() => router.push("/client/transaction/view")}
             >
               Go Back
             </Button>

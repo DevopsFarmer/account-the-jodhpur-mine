@@ -36,7 +36,7 @@ const Header = () => {
   }
 
   return (
-    <Navbar expand="lg" bg="dark" variant="dark" className="mb-3">
+    <Navbar expand="lg" bg="dark" variant="dark" className="pb-3">
       <Container fluid className="text-capitalize">
 
         <Link href="/" className="d-flex align-items-center">
@@ -112,47 +112,47 @@ const Header = () => {
               {role === "manager" && (
                 <>
                   <NavDropdown title="Client Accounts" id="manager-client-acc">
-                    <NavDropdown.Item as={Link} href="/addclient-account">
+                    <NavDropdown.Item as={Link} href="/client/account/add">
                       Add Client Account
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/viewclient-account">
+                    <NavDropdown.Item as={Link} href="/client/account/view">
                       View Client Account
                     </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Client Transactions" id="manager-client-trans">
-                    <NavDropdown.Item as={Link} href="/addclient-transaction">
+                    <NavDropdown.Item as={Link} href="/client/transaction/add">
                       Add Client Transaction
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/viewclient-transaction">
+                    <NavDropdown.Item as={Link} href="/client/transaction/view">
                       View Client Transaction
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/voucherclient-transaction">
+                    <NavDropdown.Item as={Link} href="/client/transaction/voucher">
                       Voucher Client Transaction
                     </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Vendor Accounts" id="manager-vendor-acc">
-                    <NavDropdown.Item as={Link} href="/addvendor-account">
+                    <NavDropdown.Item as={Link} href="/vendor/account/add">
                       Add Vendor Account
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/viewvendor-account">
+                    <NavDropdown.Item as={Link} href="/vendor/account">
                       View Vendor Account
                     </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Vendor Transactions" id="manager-vendor-trans">
-                    <NavDropdown.Item as={Link} href="/addvendor-transaction">
+                    <NavDropdown.Item as={Link} href="/vendor/transaction/add">
                       Add Vendor Transaction
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/viewvendor-transaction">
+                    <NavDropdown.Item as={Link} href="/vendor/transaction">
                       View Vendor Transaction
                     </NavDropdown.Item>
                   </NavDropdown>
                 </>
               )}
               {role === "guest" && (
-                <Nav.Link as={Link} href="/client-transaction" className="text-white" active>
+                <Nav.Link as={Link} href="/client/transaction" className="text-white" active>
                   Add Client Transaction
                 </Nav.Link>
               )}

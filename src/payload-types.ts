@@ -186,6 +186,7 @@ export interface ClientAccount {
  */
 export interface ClientTransaction {
   id: number;
+  voucherNo?: string | null;
   clientName: number | ClientAccount;
   query_license: number | ClientAccount;
   near_village: number | ClientAccount;
@@ -282,14 +283,17 @@ export interface Expense {
   addExpenseItems?:
     | {
         amount?: number | null;
+        date?: string | null;
         description?: string | null;
         subexpense?:
           | {
               amount?: number | null;
+              date?: string | null;
               description?: string | null;
               addExpense?:
                 | {
                     amount?: number | null;
+                    date?: string | null;
                     description?: string | null;
                     id?: string | null;
                   }[]
@@ -440,6 +444,7 @@ export interface ClientAccountsSelect<T extends boolean = true> {
  * via the `definition` "client-transaction_select".
  */
 export interface ClientTransactionSelect<T extends boolean = true> {
+  voucherNo?: T;
   clientName?: T;
   query_license?: T;
   near_village?: T;
@@ -515,16 +520,19 @@ export interface ExpenseSelect<T extends boolean = true> {
     | T
     | {
         amount?: T;
+        date?: T;
         description?: T;
         subexpense?:
           | T
           | {
               amount?: T;
+              date?: T;
               description?: T;
               addExpense?:
                 | T
                 | {
                     amount?: T;
+                    date?: T;
                     description?: T;
                     id?: T;
                   };

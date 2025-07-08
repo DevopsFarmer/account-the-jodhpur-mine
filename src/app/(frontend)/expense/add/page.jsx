@@ -25,6 +25,7 @@ const AddExpense = () => {
     id: Date.now().toString(),
     amount: '',
     description: '',
+    date:'',
     subexpense: []
   }]);
 
@@ -35,6 +36,7 @@ const AddExpense = () => {
         id: Date.now().toString(),
         amount: '',
         description: '',
+        date:'',
         subexpense: []
       }]);
     } else if (level === 'sub') {
@@ -46,6 +48,7 @@ const AddExpense = () => {
                 id: Date.now().toString(),
                 amount: '',
                 description: '',
+                date:'',
                 addExpense: []
               }]
             }
@@ -63,7 +66,8 @@ const AddExpense = () => {
                       addExpense: [...(sub.addExpense || []), {
                         id: Date.now().toString(),
                         amount: '',
-                        description: ''
+                        description: '',
+                        date:''
                       }]
                     }
                   : sub
@@ -270,12 +274,15 @@ const AddExpense = () => {
         addExpenseItems: expenseItems.map(item => ({
           amount: parseFloat(item.amount) || 0,
           description: item.description,
+          date:item.date,
           subexpense: item.subexpense.map(sub => ({
             amount: parseFloat(sub.amount) || 0,
             description: sub.description,
+            date:sub.date,
             addExpense: sub.addExpense.map(add => ({
               amount: parseFloat(add.amount) || 0,
-              description: add.description
+              description: add.description,
+              date:add.date
             }))
           }))
         })),
@@ -407,6 +414,16 @@ const AddExpense = () => {
                         onChange={(e) => updateExpense('main', item.id, '', '', 'amount', e.target.value)}
                         required
                       />
+                       <InputGroup.Text>
+                        <FaPlus />
+                      </InputGroup.Text>
+                      <Form.Control
+                        type="date"
+                        placeholder="date"
+                        value={item.date}
+                        onChange={(e) => updateExpense('main', item.id, '', '', 'date', e.target.value)}
+                        required
+                      />
                       <InputGroup.Text>
                         <FaPlus />
                       </InputGroup.Text>
@@ -437,6 +454,16 @@ const AddExpense = () => {
                             placeholder="Sub Amount"
                             value={sub.amount}
                             onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'amount', e.target.value)}
+                            required
+                          />
+                           <InputGroup.Text>
+                            <FaPlus />
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="date"
+                            placeholder="date"
+                            value={sub.date}
+                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'date', e.target.value)}
                             required
                           />
                           <InputGroup.Text>
@@ -471,6 +498,16 @@ const AddExpense = () => {
                                 onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'amount', e.target.value)}
                                 required
                               />
+                               <InputGroup.Text>
+                                <FaPlus />
+                              </InputGroup.Text>
+                                <Form.Control
+                                  type="date"
+                                  placeholder="date"
+                                  value={add.date}
+                                  onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'date', e.target.value)}
+                                  required
+                                />
                               <InputGroup.Text>
                                 <FaPlus />
                               </InputGroup.Text>

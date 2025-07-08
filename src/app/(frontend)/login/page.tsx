@@ -9,8 +9,7 @@ import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa'
 import '../styles.css';
 
 const LoginForm = () => {
-  const router = useRouter();
-  // User input states
+ 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -27,39 +26,38 @@ const LoginForm = () => {
   };
 
   // Submit form function
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Stop page reload
-    setError('');
-    setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
 
     try {
-      const response = await fetch('/api/users/login', {
+      const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+        body: JSON.stringify({ email, password }),
+      })
 
-      const data = await response.json();
+      const data = await res.json()
 
-      if (response.ok && data.token) {
-        // Store token and user
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
-        // Redirect after short delay
-        // setTimeout(() => {
-        //   router.push('/dashboard');
-        // }, 500);
+      if (res.ok && data.token) {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 2000)
       } else {
-        setError(data.message || 'Login failed.');
+        setError(data.message || 'Login failed.')
       }
+      setIsLoading(false)
     } catch (err) {
-      console.error(err);
-      setError('An unexpected error occurred.');
+      console.error(err)
+      setError('An unexpected error occurred.')
+      setIsLoading(false)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Container fluid className="login-container d-flex align-items-center justify-content-center min-vh-100">
@@ -131,7 +129,7 @@ const LoginForm = () => {
               <Button
                 type="submit"
                 className="w-100 ledger-button text-dark fw-bold bg-warning d-flex justify-content-center align-items-center gap-2"
-                disabled={isLoading}
+                onClick={handleSubmit}
               >
                 {isLoading ? (
                   <>

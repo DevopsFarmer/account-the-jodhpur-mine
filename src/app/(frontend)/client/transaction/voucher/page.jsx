@@ -33,6 +33,7 @@ import {
   FaSpinner, // Added for loading indicator
 } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
+
 import axios from "axios";
 
 // Helper function to format date as DD/MM/YYYY
@@ -422,6 +423,7 @@ const VoucherClientTransaction = () => {
 
   return (
     <>
+
       <Container className="mt-4 mb-5">
         <h4 className="text-center mb-4">
           <FaClipboard /> View All Client Voucher Transactions
@@ -476,6 +478,7 @@ const VoucherClientTransaction = () => {
             <thead className="table-dark">
               <tr>
                 <th>S.No</th>
+                <th>Voucher No</th>
                 <th>Client Name</th>
                 <th>Created At</th>
                 <th>Received Amount(<FaRupeeSign />)</th>
@@ -488,6 +491,7 @@ const VoucherClientTransaction = () => {
                 currentTransactions.map((txn, index) => (
                   <tr key={txn.id}>
                     <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="fw-bold">{txn.voucherNo || "N/A"}</td>
                     <td>{txn.clientName?.clientName || "N/A"}</td>
                     <td>
                       {formatDate(txn.clientCreatedAt)}

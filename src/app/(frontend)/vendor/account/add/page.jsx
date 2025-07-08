@@ -189,7 +189,7 @@ const AddVendorAccount = () => {
         setShowAlert(true);
         setTimeout(() => {
           resetForm();
-          router.push('/viewvendor-account');
+          router.push('/vendor/account');
         }, 1000);
       } else {
         throw new Error('Failed to save vendor account.');
@@ -203,14 +203,7 @@ const AddVendorAccount = () => {
     }
   };
 
-  if (userRole === null) return <p className="text-center mt-5">Loading...</p>;
-  if (userRole !== 'admin' && userRole !== 'manager') {
-    return (
-      <Container className="mt-4 text-center">
-        <Alert variant="danger">Access denied. Log in with appropriate credentials.</Alert>
-      </Container>
-    );
-  }
+
 
   return (
     <>

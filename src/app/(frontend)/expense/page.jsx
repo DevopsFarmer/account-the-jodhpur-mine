@@ -320,7 +320,7 @@ const ViewExpense = () => {
                         <div key={mainIdx} className="mb-3">
                           <div className="d-flex justify-content-between align-items-center mb-2">
                             <span className="fw-semibold text-capitalize">
-                              {mainItem.description} - <FaRupeeSign /> {mainItem.amount?.toFixed(2) || '0.00'}
+                              {mainItem.description} - <FaRupeeSign /> {mainItem.amount?.toFixed(2) || '0.00'} - {formatDate(mainItem.date)}
                             </span>
                           </div>
                           
@@ -330,7 +330,7 @@ const ViewExpense = () => {
                                 <div key={subIdx} className="mb-2">
                                   <div className="d-flex justify-content-between align-items-center mb-1">
                                     <span className="text-capitalize">
-                                      {subItem.description} - <FaRupeeSign /> {subItem.amount?.toFixed(2) || '0.00'}
+                                      {subItem.description} - <FaRupeeSign /> {subItem.amount?.toFixed(2) || '0.00'} - {formatDate(subItem.date)}
                                     </span>
                                   </div>
                                   
@@ -339,7 +339,7 @@ const ViewExpense = () => {
                                       {subItem.addExpense.map((addItem, addIdx) => (
                                         <div key={addIdx} className="mb-1">
                                           <span className="text-muted">
-                                            {addItem.description} - <FaRupeeSign /> {addItem.amount?.toFixed(2) || '0.00'}
+                                            {addItem.description} - <FaRupeeSign /> {addItem.amount?.toFixed(2) || '0.00'} - {formatDate(addItem.date)}
                                           </span>
                                         </div>
                                       ))}

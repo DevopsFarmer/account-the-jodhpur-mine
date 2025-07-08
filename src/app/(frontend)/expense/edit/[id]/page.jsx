@@ -330,7 +330,7 @@ const EditExpense = () => {
           <Alert variant="danger">
             <h4>Error:</h4>
             <p>{error}</p>
-            <Button onClick={() => router.push("/dashboard")}>Go to Dashboard</Button>
+            <Button onClick={() => router.push("/")}>Go to Dashboard</Button>
           </Alert>
         </Container>
       </>

@@ -291,7 +291,7 @@ const AddVendorTransaction = () => {
         setSuccess("Vendor transaction saved successfully!");
         setTimeout(() => {
           handleReset();
-          router.push("/viewvendor-transaction"); // Redirect to vendor transactions view
+          router.push("/vendor/transaction"); // Redirect to vendor transactions view
         }, 1000);
       } else {
         const result = await res.json();
@@ -348,7 +348,7 @@ const AddVendorTransaction = () => {
           <Alert variant="info" className="text-center fw-semibold">
             <FaExclamationTriangle className="me-2" />
             No vendor accounts found. Please add a vendor first to create a transaction.
-            <Button variant="info" className="ms-2 btn-sm" onClick={() => router.push('/add-vendor-account')}>
+            <Button variant="info" className="ms-2 btn-sm" onClick={() => router.push('/vendor/account/add')}>
               Add Vendor Now
             </Button>
           </Alert>

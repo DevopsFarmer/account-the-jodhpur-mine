@@ -8,8 +8,9 @@ import locationData from '../../../location.json';
 const AddClientAccount = ({ isGuest = false }) => {
   const router = useRouter();
 
-  // CHANGE 1: Smartly initialize userRole. Guests get immediate access.
+  // Initialize states - guests get immediate access
   const [userRole, setUserRole] = useState(isGuest ? 'guest' : null);
+  const [isLoaded, setIsLoaded] = useState(isGuest);
 
   // Holds the current form values (UNCHANGED)
   const [formData, setFormData] = useState({
@@ -36,44 +37,6 @@ const AddClientAccount = ({ isGuest = false }) => {
   const [villages, setVillages] = useState([]);
   const [clientNameWarning, setClientNameWarning] = useState('');
   const [isOtherDistrict, setIsOtherDistrict] = useState(false);
-
-  // CHANGE 2: Consolidated and protected useEffect hook.
-  useEffect(() => {
-    // This part runs for everyone.
-    setStates(locationData.map(item => item.state));
-
-    // If it's a guest, we stop here. No auth check needed.
-    if (isGuest) {
-      return;
-    }
-
-    // --- This entire block now ONLY runs for logged-in users ---
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        const role = parsed.role;
-        setUserRole(role);
-
-        // If a user is logged in but not authorized, redirect them.
-        if (role !== 'admin' && role !== 'manager') {
-          setTimeout(() => {
-            localStorage.clear();
-            router.push('/login'); // Use router for better navigation
-          }, 1500);
-        }
-      } catch (err) {
-        console.error('Invalid user data:', err);
-        // Handle cases with corrupted data in localStorage
-        setUserRole('unauthorized');
-        router.push('/login');
-      }
-    } else {
-        // If no user is found, they are not authenticated.
-        setUserRole('unauthorized');
-        router.push('/login');
-    }
-  }, [isGuest, router]);
 
   // Handle all input changes here (UNCHANGED)
   const handleChange = (e) => {
@@ -180,7 +143,7 @@ const AddClientAccount = ({ isGuest = false }) => {
         setTimeout(() => {
           resetForm();
           // Redirect all users to the main dashboard
-          router.push('/dashboard');
+          router.push('/');
         }, 1000);
       } else {
         throw new Error('Failed to save client account.');
@@ -194,21 +157,18 @@ const AddClientAccount = ({ isGuest = false }) => {
     }
   };
 
-  // CHANGE 3: Updated Render Logic
-  
-  // This "Loading" state will only show for non-guests while their role is checked.
-  if (userRole === null) {
-      return <p className="text-center mt-5">Loading...</p>;
+  // Initialize states when component mounts
+  useEffect(() => {
+    setStates(locationData.map(item => item.state));
+    setIsLoaded(true);
+  }, []);
+
+  // Handle loading state
+  if (!isLoaded) {
+    return <p className="text-center mt-5">Loading...</p>;
   }
-  
-  // This check now allows guests to pass through. It only blocks unauthorized users.
-  if (userRole !== 'admin' && userRole !== 'manager' && userRole !== 'guest') {
-    return (
-      <Container className="mt-4 text-center">
-        <Alert variant="danger">Access denied. Log in with appropriate credentials.</Alert>
-      </Container>
-    );
-  }
+
+
 
   // The rest of the component renders for authorized users (admin, manager, or guest)
   return (

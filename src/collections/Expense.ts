@@ -28,10 +28,12 @@ export const Expense: CollectionConfig = {
         type: 'number',
      
       },
+      { name: 'date',
+        type:'date',
+       },
       {
         name: 'description',
         type: 'text',
-       
       },
       {name:'subexpense',type:'array',
         fields:[
@@ -39,6 +41,9 @@ export const Expense: CollectionConfig = {
             name:'amount',
             type:'number',
           },
+          { name: 'date',
+            type:'date',
+           },
           {
             name:'description',
             type:'text',
@@ -51,6 +56,9 @@ export const Expense: CollectionConfig = {
               name:'amount',
               type:'number',
             },
+            { name: 'date',
+              type:'date',
+             },
             {
               name:'description',
               type:'text',
