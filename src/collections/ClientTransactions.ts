@@ -5,7 +5,7 @@ export const ClientTransactions: CollectionConfig = {
   admin: {
     useAsTitle: 'clientName',
   },
- 
+
   fields: [
     {
       name: 'clientName',
@@ -14,56 +14,56 @@ export const ClientTransactions: CollectionConfig = {
       required: true,
     },
     {
-      name:'query_license',
-      type:'relationship',
-      relationTo:'client-accounts',
-      required:true,
+      name: 'query_license',
+      type: 'relationship',
+      relationTo: 'client-accounts',
+      required: true,
     },
     {
-      name:'near_village',
-      type:'relationship',
-      relationTo:'client-accounts',
-      required:true,
+      name: 'near_village',
+      type: 'relationship',
+      relationTo: 'client-accounts',
+      required: true,
     },
     {
       name: 'workingStage',
       type: 'array',
-     
+
       fields: [
         {
           name: 'workingStage',
           type: 'text',
-         
+
         },
         {
           name: 'workingDescription',
           type: 'text',
-         
+
         },
         {
-          name:"workstatus",
-          type:'text',
-          defaultValue:'incomplete',
+          name: "workstatus",
+          type: 'text',
+          defaultValue: 'incomplete',
         }
       ],
     },
     {
       name: 'workingStageclient',
       type: 'array',
-     
+
       fields: [
         {
           name: 'workingStageclient',
           type: 'text',
-         
         },
         {
           name: 'workingDescriptionclient',
           type: 'text',
         },
         {
-          name:"workDate",
-          type:'date',
+          name: 'stageDate',
+          type: 'date',
+          required: true,
         }
       ],
     },
@@ -72,33 +72,46 @@ export const ClientTransactions: CollectionConfig = {
       type: 'number',
     },
     {
-      name:'totalAmountclient',
-      type:'number',
+      name: 'totalAmountclient',
+      type: 'number',
     },
     {
       name: 'remainingAmount',
       type: 'number',
-     
+
     },
     {
       name: 'description',
       type: 'text',
- 
+
     },
     {
       name: 'clientCreatedAt',
       type: 'date',
-     
+
     },
     {
       name: 'clientUpdatedAt',
       type: 'date',
-      
+
     },
     {
-      name:'paymentstatus',
-      type:'text',
-      defaultValue:'pending',
+      name: 'paymentstatus',
+      type: 'text',
+      defaultValue: 'pending',
+    },
+    {
+      name: 'source',
+      type: 'select',
+      options: [
+        { label: 'Guest', value: 'guest' },
+        { label: 'Manager', value: 'manager' },
+      ],
+      required: true,
+      defaultValue: 'guest',
+      admin: {
+        position: 'sidebar',
+      },
     }
   ],
 }

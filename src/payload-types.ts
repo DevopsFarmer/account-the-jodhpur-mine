@@ -201,7 +201,7 @@ export interface ClientTransaction {
     | {
         workingStageclient?: string | null;
         workingDescriptionclient?: string | null;
-        workDate?: string | null;
+        stageDate: string;
         id?: string | null;
       }[]
     | null;
@@ -212,6 +212,7 @@ export interface ClientTransaction {
   clientCreatedAt?: string | null;
   clientUpdatedAt?: string | null;
   paymentstatus?: string | null;
+  source: 'guest' | 'manager';
   updatedAt: string;
   createdAt: string;
 }
@@ -229,6 +230,7 @@ export interface VendorTransaction {
         workingStage?: string | null;
         workingDescription?: string | null;
         workstatus?: string | null;
+        stageDate?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -454,7 +456,7 @@ export interface ClientTransactionSelect<T extends boolean = true> {
     | {
         workingStageclient?: T;
         workingDescriptionclient?: T;
-        workDate?: T;
+        stageDate?: T;
         id?: T;
       };
   totalAmount?: T;
@@ -464,6 +466,7 @@ export interface ClientTransactionSelect<T extends boolean = true> {
   clientCreatedAt?: T;
   clientUpdatedAt?: T;
   paymentstatus?: T;
+  source?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -481,6 +484,7 @@ export interface VendorTransactionSelect<T extends boolean = true> {
         workingStage?: T;
         workingDescription?: T;
         workstatus?: T;
+        stageDate?: T;
         id?: T;
       };
   workingStagevendor?:
