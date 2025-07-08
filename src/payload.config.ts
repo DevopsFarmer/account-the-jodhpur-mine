@@ -13,10 +13,8 @@ import { Expense } from './collections/Expense'
 import { Vendor } from './collections/Vendor'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-
 export default buildConfig({
   admin: {
     user: Users.slug,
