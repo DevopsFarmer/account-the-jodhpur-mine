@@ -476,6 +476,7 @@ const VoucherClientTransaction = () => {
             <thead className="table-dark">
               <tr>
                 <th>S.No</th>
+                <th>Voucher No</th>
                 <th>Client Name</th>
                 <th>Created At</th>
                 <th>Received Amount(<FaRupeeSign />)</th>
@@ -488,6 +489,7 @@ const VoucherClientTransaction = () => {
                 currentTransactions.map((txn, index) => (
                   <tr key={txn.id}>
                     <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="fw-bold">{txn.voucherNo || "N/A"}</td>
                     <td>{txn.clientName?.clientName || "N/A"}</td>
                     <td>
                       {formatDate(txn.clientCreatedAt)}

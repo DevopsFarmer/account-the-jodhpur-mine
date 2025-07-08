@@ -350,7 +350,7 @@
             <Alert variant="info" className="text-center fw-semibold">
               <FaExclamationTriangle className="me-2" />
               No client accounts found. Please add a client first to create a transaction.
-              <Button variant="info" className="ms-2 btn-sm" onClick={() => router.push('/add-client-account')}>
+              <Button variant="info" className="ms-2 btn-sm" onClick={() => router.push('/client/account/add')}>
                 Add Client Now
               </Button>
             </Alert>

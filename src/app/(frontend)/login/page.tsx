@@ -45,10 +45,10 @@ const LoginForm = () => {
         // Store token and user
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
+        router.push('/');
         // Redirect after short delay
         // setTimeout(() => {
-        //   router.push('/dashboard');
+        //   router.push('/');
         // }, 500);
       } else {
         setError(data.message || 'Login failed.');
