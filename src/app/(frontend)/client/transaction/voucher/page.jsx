@@ -33,6 +33,7 @@ import {
   FaSpinner, // Added for loading indicator
 } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
+
 import axios from "axios";
 
 // Helper function to format date as DD/MM/YYYY
@@ -422,6 +423,7 @@ const VoucherClientTransaction = () => {
 
   return (
     <>
+
       <Container className="mt-4 mb-5">
         <h4 className="text-center mb-4">
           <FaClipboard /> View All Client Voucher Transactions

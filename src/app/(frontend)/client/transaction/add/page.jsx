@@ -293,7 +293,7 @@
           setSuccess("Client transaction saved successfully!");
           setTimeout(() => {
             handleReset();
-            router.push("/viewclient-transaction");
+            router.push("/client/transaction/view");
           }, 1000);
         } else {
           const result = await res.json();

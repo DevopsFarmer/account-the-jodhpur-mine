@@ -278,7 +278,7 @@ const EditVendorTransaction = () => {
         setSuccess("Vendor transaction updated successfully!");
         setTimeout(() => {
           setSuccess("");
-          router.push("/viewvendor-transaction"); // Updated redirection path
+          router.push("/vendor/transaction"); // Updated redirection path
         }, 1000);
       } else {
         const errData = await res.json();
@@ -526,7 +526,7 @@ const EditVendorTransaction = () => {
             <Button
               variant="secondary"
               className="px-4 fw-bold rounded-3"
-              onClick={() => router.push("/viewvendor-transaction")} // Updated redirection path
+              onClick={() => router.push("/vendor/transaction")} // Updated redirection path
             >
               Go Back
             </Button>

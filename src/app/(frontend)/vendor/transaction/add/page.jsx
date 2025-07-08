@@ -291,7 +291,7 @@ const AddVendorTransaction = () => {
         setSuccess("Vendor transaction saved successfully!");
         setTimeout(() => {
           handleReset();
-          router.push("/viewvendor-transaction"); // Redirect to vendor transactions view
+          router.push("/vendor/transaction"); // Redirect to vendor transactions view
         }, 1000);
       } else {
         const result = await res.json();

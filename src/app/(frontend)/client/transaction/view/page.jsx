@@ -1,40 +1,11 @@
-
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Table,
-  Button,
-  Modal,
-  Form,
-  InputGroup,
-  Spinner,
-  Alert,
-  Badge,
-  Card,
-} from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card, } from "react-bootstrap";
 import { useRouter } from "next/navigation";
-import {
-  FaEye,
-  FaSearch,
-  FaRupeeSign,
-  FaClipboard,
-  FaWrench,
-  FaFilePdf,
-  FaUser,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaAngleLeft,
-  FaAngleRight,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaSpinner, // Added for loading indicator
-} from "react-icons/fa";
+import axios from "axios";
+import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle, } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
-
 
 // Helper function to format date as DD/MM/YYYY
 const formatDate = (date) =>
@@ -550,7 +521,7 @@ const ViewClientTransaction = () => {
                         </Button>
                         <Button
                           variant="warning"
-                          onClick={() => router.push(`/editclient-transaction/${txn.id}`)}
+                          onClick={() => router.push(`/client/transaction/edit/${txn.id}`)}
                         >
                           <PencilSquare />
                         </Button>

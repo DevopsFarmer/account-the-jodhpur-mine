@@ -189,7 +189,7 @@ const AddVendorAccount = () => {
         setShowAlert(true);
         setTimeout(() => {
           resetForm();
-          router.push('/viewvendor-account');
+          router.push('/vendor/account');
         }, 1000);
       } else {
         throw new Error('Failed to save vendor account.');
