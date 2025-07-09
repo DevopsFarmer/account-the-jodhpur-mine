@@ -9,25 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faScrewdriverWrench, faSave as faSaveIcon } from '@fortawesome/free-solid-svg-icons';
 
 
-// Helper function to format date/time for display
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-};
-const formatTime = (dateString) => {
-  if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Kolkata',
-  });
-};
+
 
 const EditExpense = () => {
   const router = useRouter();
@@ -48,24 +30,20 @@ const EditExpense = () => {
     if (typeof window !== "undefined") {
       const userData = localStorage.getItem("user");
       if (!userData) {
-        // No user data found, redirect to login
-        router.push("/api/logout"); // Assuming '/login' is your login page
-        return; // Stop further execution
+        router.push("/api/logout"); 
+        return; 
       }
       try {
         const parsedUser = JSON.parse(userData);
         const role = parsedUser.role;
         setUserRole(role);
 
-        // Only "admin" can access this page
         if (role !== "admin") {
-          //alert("You do not have permission to access this page.");
           setTimeout(() => {
             localStorage.clear()
             window.location.href = '/api/logout'
-          }, 1500); // Redirect to dashboard or a denied access page
+          }, 1500); 
         } else {
-          // If admin, proceed to fetch data
           fetchExpense();
         }
       } catch (e) {
@@ -73,19 +51,18 @@ const EditExpense = () => {
         setTimeout(() => {
           localStorage.clear()
           window.location.href = '/api/logout'
-        }, 1500); // Redirect if localStorage data is corrupt
+        }, 1500); 
       }
     }
-  }, [router, id]); // Depend on router and id
+  }, [router, id]); 
 
   // Load expense data from Payload backend
   const fetchExpense = async () => {
     setLoading(true);
-    setError(null); // Clear previous errors
+    setError(null); 
     try {
       const res = await fetch(`/api/expense/${id}`);
       if (!res.ok) {
-        // Handle non-2xx responses (e.g., 404 if expense not found, 403 if server-side auth fails)
         if (res.status === 404) {
           throw new Error("Expense not found.");
         } else if (res.status === 403) {
@@ -96,7 +73,6 @@ const EditExpense = () => {
       const data = await res.json();
       setExpense(data);
       setInitialBalance(data.initialBalanceAmount !== undefined ? data.initialBalanceAmount : "");
-      // Ensure expense items are an array, even if empty or null from backend
       setExpenseItems(data.addExpenseItems && Array.isArray(data.addExpenseItems) ? data.addExpenseItems : []);
     } catch (err) {
       console.error("Failed to load expense:", err);
@@ -106,7 +82,6 @@ const EditExpense = () => {
     }
   };
 
-  // Update expense item fields (description or amount)
   const updateExpense = (level, parentId, subId, addId, field, value) => {
     if (level === 'main') {
       setExpenseItems(prev => prev.map(item => 
@@ -159,7 +134,6 @@ const EditExpense = () => {
     }
   };
 
-  // Remove main expense item
   const removeMainExpense = (index) => {
     setExpenseItems(prev => {
       const newItems = [...prev];
@@ -168,7 +142,6 @@ const EditExpense = () => {
     });
   };
 
-  // Remove subexpense item
   const removeSubExpense = (parentId, subIndex) => {
     setExpenseItems(prev => prev.map(item => 
       item.id === parentId 
@@ -180,7 +153,6 @@ const EditExpense = () => {
     ));
   };
 
-  // Remove add expense item
   const removeAddExpense = (parentId, subId, addIndex) => {
     setExpenseItems(prev => prev.map(item => 
       item.id === parentId 
@@ -199,12 +171,12 @@ const EditExpense = () => {
     ));
   };
 
-  // Add new expense at any level
   const addExpense = (level, parentId, subId) => {
     if (level === 'main') {
       setExpenseItems(prev => [...prev, {
         id: Date.now().toString(),
         amount: '',
+        date:'',
         description: '',
         subexpense: []
       }]);
@@ -216,6 +188,7 @@ const EditExpense = () => {
               subexpense: [...item.subexpense, {
                 id: Date.now().toString(),
                 amount: '',
+                date:'',
                 description: '',
                 addExpense: []
               }]
@@ -234,6 +207,7 @@ const EditExpense = () => {
                       addExpense: [...sub.addExpense, {
                         id: Date.now().toString(),
                         amount: '',
+                        date:'',
                         description: ''
                       }]
                     }
@@ -268,21 +242,24 @@ const EditExpense = () => {
     }
 
     const updatedExpense = {
-      ...expense, // Keep existing fields
+      ...expense, 
       initialBalanceAmount: parseFloat(initialBalance),
       addExpenseItems: expenseItems.map(item => ({
         description: item.description.trim(),
         amount: parseFloat(item.amount),
+        date:item.date,
         subexpense: item.subexpense.map(sub => ({
           description: sub.description.trim(),
           amount: parseFloat(sub.amount),
+          date:sub.date,
           addExpense: sub.addExpense.map(add => ({
             description: add.description.trim(),
             amount: parseFloat(add.amount),
+            date:add.date,
           }))
         }))
       })),
-      expenseUpdatedAt: new Date().toISOString(), // Update timestamp
+      expenseUpdatedAt: new Date().toISOString(), 
     };
 
     try {
@@ -290,8 +267,7 @@ const EditExpense = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          // Potentially add authorization header if your API requires it
-          // "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          
         },
         body: JSON.stringify(updatedExpense),
       });
@@ -301,8 +277,7 @@ const EditExpense = () => {
         throw new Error(errorData.message || "Failed to save changes.");
       }
 
-      //alert("Expense updated successfully!");
-      router.push("/view-expense"); // Navigate back on success
+      router.push("/expense"); 
     } catch (error) {
       console.error("Error saving:", error);
       setError(error.message || "Failed to save. Please try again.");
@@ -311,7 +286,6 @@ const EditExpense = () => {
     }
   };
 
-  // Show spinner while loading data, but only if an admin role is expected
   if (loading && userRole === "admin") {
     return (
       <div className="text-center mt-5">
@@ -321,7 +295,6 @@ const EditExpense = () => {
     );
   }
 
-  // Display error if data couldn't be loaded or user is unauthorized
   if (error) {
     return (
       <>
@@ -337,10 +310,8 @@ const EditExpense = () => {
     );
   }
 
-  // If userRole is determined and not admin, the useEffect above will redirect.
-  // This ensures the content below only renders for admins.
   if (userRole !== "admin") {
-    return null; // Or a simple "Access Denied" message
+    return null; 
   }
 
   return (
@@ -399,99 +370,165 @@ const EditExpense = () => {
               <div className="border rounded p-3">
                 {expenseItems.map((item, index) => (
                   <div key={item.id} className="mb-3">
-                    <InputGroup className="mb-2">
-                      <InputGroup.Text>
-                        <FaRupeeSign />
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="number"
-                        placeholder="Amount"
-                        value={item.amount}
-                        onChange={(e) => updateExpense('main', item.id, '', '', 'amount', e.target.value)}
-                        required
-                      />
-                      <InputGroup.Text>
-                        <FaPlus />
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="text"
-                        placeholder="Description"
-                        value={item.description}
-                        onChange={(e) => updateExpense('main', item.id, '', '', 'description', e.target.value)}
-                        required
-                      />
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => removeMainExpense(index)}
-                        className="ms-2"
-                      >
-                        <FaTrash />
-                      </Button>
-                    </InputGroup>
-
-                    {item.subexpense.map((sub, subIndex) => (
-                      <div key={sub.id} className="ms-4 border-start ps-3">
-                        <InputGroup className="mb-2">
+                     <div className="row g-2">
+                      <div className="col-12 col-md-4">
+                        <InputGroup>
                           <InputGroup.Text>
                             <FaRupeeSign />
                           </InputGroup.Text>
                           <Form.Control
                             type="number"
-                            placeholder="Sub Amount"
-                            value={sub.amount}
-                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'amount', e.target.value)}
+                            placeholder="Amount"
+                            value={item.amount}
+                            onChange={(e) => updateExpense('main', item.id, '', '', 'amount', e.target.value)}
                             required
                           />
+                        </InputGroup>
+                      </div>
+                      <div className="col-12 col-md-4">
+                        <InputGroup>
+                          <InputGroup.Text>
+                            <FaPlus />
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="date"
+                            placeholder="date"
+                            value={item.date}
+                            onChange={(e) => updateExpense('main', item.id, '', '', 'date', e.target.value)}
+                            required
+                          />
+                        </InputGroup>
+                      </div>
+                      <div className="col-12 col-md-4">
+                        <InputGroup>
                           <InputGroup.Text>
                             <FaPlus />
                           </InputGroup.Text>
                           <Form.Control
                             type="text"
-                            placeholder="Sub Description"
-                            value={sub.description}
-                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'description', e.target.value)}
+                            placeholder="Description"
+                            value={item.description}
+                            onChange={(e) => updateExpense('main', item.id, '', '', 'description', e.target.value)}
                             required
                           />
                           <Button
                             variant="outline-danger"
-                            onClick={() => removeSubExpense(item.id, subIndex)}
+                            onClick={() => removeExpenseItem(index)}
                             className="ms-2"
                           >
                             <FaTrash />
                           </Button>
                         </InputGroup>
+                      </div>
+                    </div>
 
-                        {sub.addExpense.map((add, addIndex) => (
-                          <div key={add.id} className="ms-4 border-start ps-3">
-                            <InputGroup className="mb-2">
+                    {item.subexpense.map((sub, subIndex) => (
+                      <div key={sub.id} className="ms-4 border-start ps-3">
+                          <div className="row g-2">
+                          <div className="col-12 col-md-4">
+                            <InputGroup>
                               <InputGroup.Text>
                                 <FaRupeeSign />
                               </InputGroup.Text>
                               <Form.Control
                                 type="number"
-                                placeholder="Additional Amount"
-                                value={add.amount}
-                                onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'amount', e.target.value)}
+                                placeholder="Sub Amount"
+                                value={sub.amount}
+                                onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'amount', e.target.value)}
                                 required
                               />
+                            </InputGroup>
+                          </div>
+                          <div className="col-12 col-md-4">
+                            <InputGroup>
+                              <InputGroup.Text>
+                                <FaPlus />
+                              </InputGroup.Text>
+                              <Form.Control
+                                type="date"
+                                placeholder="date"
+                                value={sub.date}
+                                onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'date', e.target.value)}
+                                required
+                              />
+                            </InputGroup>
+                          </div>
+                          <div className="col-12 col-md-4">
+                            <InputGroup>
                               <InputGroup.Text>
                                 <FaPlus />
                               </InputGroup.Text>
                               <Form.Control
                                 type="text"
-                                placeholder="Additional Description"
-                                value={add.description}
-                                onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'description', e.target.value)}
+                                placeholder="Sub Description"
+                                value={sub.description}
+                                onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'description', e.target.value)}
                                 required
                               />
                               <Button
                                 variant="outline-danger"
-                                onClick={() => removeAddExpense(item.id, sub.id, addIndex)}
+                                onClick={() => removeSubExpense(item.id, subIndex)}
                                 className="ms-2"
                               >
                                 <FaTrash />
                               </Button>
                             </InputGroup>
+                          </div>
+                        </div>
+
+                        {sub.addExpense.map((add, addIndex) => (
+                          <div key={add.id} className="ms-4 border-start ps-3">
+                            <div className="row g-2">
+                              <div className="col-12 col-md-4">
+                                <InputGroup>
+                                  <InputGroup.Text>
+                                    <FaRupeeSign />
+                                  </InputGroup.Text>
+                                  <Form.Control
+                                    type="number"
+                                    placeholder="Additional Amount"
+                                    value={add.amount}
+                                    onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'amount', e.target.value)}
+                                    required
+                                  />
+                                </InputGroup>
+                              </div>
+                              <div className="col-12 col-md-4">
+                                <InputGroup>
+                                  <InputGroup.Text>
+                                    <FaPlus />
+                                  </InputGroup.Text>
+                                  <Form.Control
+                                    type="date"
+                                    placeholder="date"
+                                    value={add.date}
+                                    onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'date', e.target.value)}
+                                    required
+                                  />
+                                </InputGroup>
+                              </div>
+                              <div className="col-12 col-md-4">
+                                <InputGroup>
+                                  <InputGroup.Text>
+                                    <FaPlus />
+                                  </InputGroup.Text>
+                                  <Form.Control
+                                    type="text"
+                                    placeholder="Additional Description"
+                                    value={add.description}
+                                    onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'description', e.target.value)}
+                                    required
+                                  />
+                                  <Button
+                                    variant="outline-danger"
+                                    onClick={() => removeAddExpense(item.id, sub.id, addIndex)}
+                                    className="ms-2"
+                                  >
+                                    <FaTrash />
+                                  </Button>
+                                </InputGroup>
+                              </div>
+                            </div>
                           </div>
                         ))}
 
