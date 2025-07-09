@@ -9,7 +9,12 @@ import "./styles.css";
 
 const Header = () => {
   const router = useRouter();
-  const [role, setRole] = useState(""); 
+  const [role, setRole] = useState("");
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => {
+    setShow(false);
+  } 
 
   useEffect(() => {
     let Userdata;
@@ -42,12 +47,14 @@ const Header = () => {
         <Link href="/" className="d-flex align-items-center">
           <img src="/png.png" alt="Aruna Logo" className="navbar-logo" />
         </Link>
-        <Navbar.Toggle aria-controls="offcanvasNavbar" />
+        <Navbar.Toggle aria-controls="offcanvasNavbar" onClick={() => setShow(!show)} />
         <Navbar.Offcanvas
           id="offcanvasNavbar"
           aria-labelledby="offcanvasNavbarLabel"
           placement="end"
           className="bg-dark text-white"
+          show={show}
+          onHide={handleClose}
         >
           <Offcanvas.Header closeButton closeVariant="white">
             <Offcanvas.Title id="offcanvasNavbarLabel" className="fs-5 fw-bold">
@@ -60,49 +67,49 @@ const Header = () => {
               {role === "admin" && (
                 <>
                   <NavDropdown title="Client Accounts" id="admin-client-acc">
-                    <NavDropdown.Item as={Link} href="/client/account/add">
+                    <NavDropdown.Item as={Link} href="/client/account/add" onClick={handleClose}>
                       Add Client Account
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/client/account/view">
+                    <NavDropdown.Item as={Link} href="/client/account/view" onClick={handleClose}>
                       View Client Account
                     </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Client Transactions" id="admin-client-trans">
-                  <NavDropdown.Item as={Link} href="/client/transaction/add">
+                  <NavDropdown.Item as={Link} href="/client/transaction/add" onClick={handleClose}>
                       Add Client Transaction
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/client/transaction/view">
+                    <NavDropdown.Item as={Link} href="/client/transaction/view" onClick={handleClose}>
                       View Client Transaction
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/client/transaction/voucher">
+                    <NavDropdown.Item as={Link} href="/client/transaction/voucher" onClick={handleClose}>
                       Voucher Client Transaction
                     </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Vendor Accounts" id="admin-vendor-acc">
-                  <NavDropdown.Item as={Link} href="/vendor/account/add">
+                  <NavDropdown.Item as={Link} href="/vendor/account/add" onClick={handleClose}>
                       Add Vendor Account
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/vendor/account">
+                    <NavDropdown.Item as={Link} href="/vendor/account" onClick={handleClose}>
                       View Vendor Account
                     </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Vendor Transactions" id="admin-vendor-trans">
-                    <NavDropdown.Item as={Link} href="/vendor/transaction/add">
+                    <NavDropdown.Item as={Link} href="/vendor/transaction/add" onClick={handleClose}>
                       Add Vendor Transaction
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/vendor/transaction">
+                    <NavDropdown.Item as={Link} href="/vendor/transaction" onClick={handleClose}>
                       View Vendor Transaction
                     </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Expense" id="admin-expense">
-                    <NavDropdown.Item as={Link} href="/expense/add">
+                    <NavDropdown.Item as={Link} href="/expense/add" onClick={handleClose}>
                       Add Expense
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} href="/expense">
+                    <NavDropdown.Item as={Link} href="/expense" onClick={handleClose}>
                       View Expense
                     </NavDropdown.Item>
                   </NavDropdown>
@@ -152,7 +159,7 @@ const Header = () => {
                 </>
               )}
               {role === "guest" && (
-                <Nav.Link as={Link} href="/client/transaction" className="text-white" active>
+                <Nav.Link as={Link} href="/client/transaction" className="text-white" active onClick={handleClose}>
                   Add Client Transaction
                 </Nav.Link>
               )}
