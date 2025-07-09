@@ -7,7 +7,8 @@ import { Container, Form, Button, Row, Col, Alert, Spinner, InputGroup } from 'r
 import { FaPlus, FaExclamationTriangle, FaTrash, FaRupeeSign } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave as faSaveIcon } from '@fortawesome/free-solid-svg-icons';
-
+import { FaAlignJustify } from 'react-icons/fa';
+import { FaCalendarAlt } from 'react-icons/fa';
 const AddExpense = () => {
   const router = useRouter();
   const [userRole, setUserRole] = useState(null);
@@ -421,7 +422,7 @@ const AddExpense = () => {
                       <div className="col-12 col-md-4">
                         <InputGroup>
                           <InputGroup.Text>
-                            <FaPlus />
+                          <FaCalendarAlt />
                           </InputGroup.Text>
                           <Form.Control
                             type="date"
@@ -435,7 +436,7 @@ const AddExpense = () => {
                       <div className="col-12 col-md-4">
                         <InputGroup>
                           <InputGroup.Text>
-                            <FaPlus />
+                          <FaAlignJustify />
                           </InputGroup.Text>
                           <Form.Control
                             type="text"
@@ -475,7 +476,7 @@ const AddExpense = () => {
                           <div className="col-12 col-md-4">
                             <InputGroup>
                               <InputGroup.Text>
-                                <FaPlus />
+                                <FaCalendarAlt />
                               </InputGroup.Text>
                               <Form.Control
                                 type="date"
@@ -489,7 +490,7 @@ const AddExpense = () => {
                           <div className="col-12 col-md-4">
                             <InputGroup>
                               <InputGroup.Text>
-                                <FaPlus />
+                                <FaAlignJustify />
                               </InputGroup.Text>
                               <Form.Control
                                 type="text"
@@ -529,7 +530,7 @@ const AddExpense = () => {
                               <div className="col-12 col-md-4">
                                 <InputGroup>
                                   <InputGroup.Text>
-                                    <FaPlus />
+                                    <FaCalendarAlt />
                                   </InputGroup.Text>
                                   <Form.Control
                                     type="date"
@@ -543,7 +544,7 @@ const AddExpense = () => {
                               <div className="col-12 col-md-4">
                                 <InputGroup>
                                   <InputGroup.Text>
-                                    <FaPlus />
+                                    <FaAlignJustify />
                                   </InputGroup.Text>
                                   <Form.Control
                                     type="text"
