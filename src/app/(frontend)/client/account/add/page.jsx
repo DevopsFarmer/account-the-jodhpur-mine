@@ -41,12 +41,6 @@ const AddClientAccount = ({ isGuest = false }) => {
   // Handle all input changes here (UNCHANGED)
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'clientName') {
-      // const valid = value.replace(/[^a-z ]/g, '');
-      // setClientNameWarning(valid !== value ? 'Only lowercase letters and spaces allowed' : '');
-      setFormData({ ...formData, [name]: value });
-      return;
-    }
     if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
       const valid = value.replace(/[^a-z ]/g, '');
       setFormData({ ...formData, [name]: valid });
@@ -190,9 +184,8 @@ const AddClientAccount = ({ isGuest = false }) => {
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label className="fw-bold fs-5">Client Name <span className="text-danger">*</span></Form.Label>
-                <Form.Control type="text" name="clientName" required pattern="^[a-z ]+$" value={formData.clientName} onChange={handleChange} placeholder="Enter client name" />
-                {/* <Form.Control.Feedback type="invalid">Lowercase letters and spaces are allowed.</Form.Control.Feedback> */}
-                {/* {clientNameWarning && <div className="text-danger mt-1">{clientNameWarning}</div>} */}
+                <Form.Control type="text" name="clientName"  value={formData.clientName} onChange={handleChange} placeholder="Enter client name" />
+          
               </Form.Group>
 
               <Form.Group className="mb-3">
