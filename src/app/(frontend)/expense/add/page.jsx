@@ -403,129 +403,165 @@ const AddExpense = () => {
               <div className="border rounded p-3">
                 {expenseItems.map((item, index) => (
                   <div key={item.id} className="mb-3">
-                    <InputGroup className="mb-2">
-                      <InputGroup.Text>
-                        <FaRupeeSign />
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="number"
-                        placeholder="Amount"
-                        value={item.amount}
-                        onChange={(e) => updateExpense('main', item.id, '', '', 'amount', e.target.value)}
-                        required
-                      />
-                       <InputGroup.Text>
-                        <FaPlus />
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="date"
-                        placeholder="date"
-                        value={item.date}
-                        onChange={(e) => updateExpense('main', item.id, '', '', 'date', e.target.value)}
-                        required
-                      />
-                      <InputGroup.Text>
-                        <FaPlus />
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="text"
-                        placeholder="Description"
-                        value={item.description}
-                        onChange={(e) => updateExpense('main', item.id, '', '', 'description', e.target.value)}
-                        required
-                      />
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => removeExpenseItem(index)}
-                        className="ms-2"
-                      >
-                        <FaTrash />
-                      </Button>
-                    </InputGroup>
-
-                    {(item.subexpense || []).map((sub, subIndex) => (
-                      <div key={sub.id} className="ms-4 border-start ps-3">
-                        <InputGroup className="mb-2">
+                    <div className="row g-2">
+                      <div className="col-12 col-md-4">
+                        <InputGroup>
                           <InputGroup.Text>
                             <FaRupeeSign />
                           </InputGroup.Text>
                           <Form.Control
                             type="number"
-                            placeholder="Sub Amount"
-                            value={sub.amount}
-                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'amount', e.target.value)}
+                            placeholder="Amount"
+                            value={item.amount}
+                            onChange={(e) => updateExpense('main', item.id, '', '', 'amount', e.target.value)}
                             required
                           />
-                           <InputGroup.Text>
+                        </InputGroup>
+                      </div>
+                      <div className="col-12 col-md-4">
+                        <InputGroup>
+                          <InputGroup.Text>
                             <FaPlus />
                           </InputGroup.Text>
                           <Form.Control
                             type="date"
                             placeholder="date"
-                            value={sub.date}
-                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'date', e.target.value)}
+                            value={item.date}
+                            onChange={(e) => updateExpense('main', item.id, '', '', 'date', e.target.value)}
                             required
                           />
+                        </InputGroup>
+                      </div>
+                      <div className="col-12 col-md-4">
+                        <InputGroup>
                           <InputGroup.Text>
                             <FaPlus />
                           </InputGroup.Text>
                           <Form.Control
                             type="text"
-                            placeholder="Sub Description"
-                            value={sub.description}
-                            onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'description', e.target.value)}
+                            placeholder="Description"
+                            value={item.description}
+                            onChange={(e) => updateExpense('main', item.id, '', '', 'description', e.target.value)}
                             required
                           />
                           <Button
                             variant="outline-danger"
-                            onClick={() => removeSubExpense(item.id, subIndex)}
+                            onClick={() => removeExpenseItem(index)}
                             className="ms-2"
                           >
                             <FaTrash />
                           </Button>
                         </InputGroup>
+                      </div>
+                    </div>
 
-                        {(sub.addExpense || []).map((add, addIndex) => (
-                          <div key={add.id} className="ms-4 border-start ps-3">
-                            <InputGroup className="mb-2">
+                    {(item.subexpense || []).map((sub, subIndex) => (
+                      <div key={sub.id} className="ms-4 border-start ps-3">
+                        <div className="row g-2">
+                          <div className="col-12 col-md-4">
+                            <InputGroup>
                               <InputGroup.Text>
                                 <FaRupeeSign />
                               </InputGroup.Text>
                               <Form.Control
                                 type="number"
-                                placeholder="Additional Amount"
-                                value={add.amount}
-                                onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'amount', e.target.value)}
+                                placeholder="Sub Amount"
+                                value={sub.amount}
+                                onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'amount', e.target.value)}
                                 required
                               />
-                               <InputGroup.Text>
+                            </InputGroup>
+                          </div>
+                          <div className="col-12 col-md-4">
+                            <InputGroup>
+                              <InputGroup.Text>
                                 <FaPlus />
                               </InputGroup.Text>
-                                <Form.Control
-                                  type="date"
-                                  placeholder="date"
-                                  value={add.date}
-                                  onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'date', e.target.value)}
-                                  required
-                                />
+                              <Form.Control
+                                type="date"
+                                placeholder="date"
+                                value={sub.date}
+                                onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'date', e.target.value)}
+                                required
+                              />
+                            </InputGroup>
+                          </div>
+                          <div className="col-12 col-md-4">
+                            <InputGroup>
                               <InputGroup.Text>
                                 <FaPlus />
                               </InputGroup.Text>
                               <Form.Control
                                 type="text"
-                                placeholder="Additional Description"
-                                value={add.description}
-                                onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'description', e.target.value)}
+                                placeholder="Sub Description"
+                                value={sub.description}
+                                onChange={(e) => updateExpense('sub', item.id, sub.id, '', 'description', e.target.value)}
                                 required
                               />
                               <Button
                                 variant="outline-danger"
-                                onClick={() => removeAddExpense(item.id, sub.id, addIndex)}
+                                onClick={() => removeSubExpense(item.id, subIndex)}
                                 className="ms-2"
                               >
                                 <FaTrash />
                               </Button>
                             </InputGroup>
+                          </div>
+                        </div>
+
+                        {(sub.addExpense || []).map((add, addIndex) => (
+                          <div key={add.id} className="ms-4 border-start ps-3">
+                            <div className="row g-2">
+                              <div className="col-12 col-md-4">
+                                <InputGroup>
+                                  <InputGroup.Text>
+                                    <FaRupeeSign />
+                                  </InputGroup.Text>
+                                  <Form.Control
+                                    type="number"
+                                    placeholder="Additional Amount"
+                                    value={add.amount}
+                                    onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'amount', e.target.value)}
+                                    required
+                                  />
+                                </InputGroup>
+                              </div>
+                              <div className="col-12 col-md-4">
+                                <InputGroup>
+                                  <InputGroup.Text>
+                                    <FaPlus />
+                                  </InputGroup.Text>
+                                  <Form.Control
+                                    type="date"
+                                    placeholder="date"
+                                    value={add.date}
+                                    onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'date', e.target.value)}
+                                    required
+                                  />
+                                </InputGroup>
+                              </div>
+                              <div className="col-12 col-md-4">
+                                <InputGroup>
+                                  <InputGroup.Text>
+                                    <FaPlus />
+                                  </InputGroup.Text>
+                                  <Form.Control
+                                    type="text"
+                                    placeholder="Additional Description"
+                                    value={add.description}
+                                    onChange={(e) => updateExpense('add', item.id, sub.id, add.id, 'description', e.target.value)}
+                                    required
+                                  />
+                                  <Button
+                                    variant="outline-danger"
+                                    onClick={() => removeAddExpense(item.id, sub.id, addIndex)}
+                                    className="ms-2"
+                                  >
+                                    <FaTrash />
+                                  </Button>
+                                </InputGroup>
+                              </div>
+                            </div>
                           </div>
                         ))}
 
