@@ -4,10 +4,10 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Form, Row, Col, InputGroup, Button, Spinner, Alert } from "react-bootstrap";
 import { FaPlus, FaTrash, FaRupeeSign } from "react-icons/fa";
-import { TbTransactionRupee } from 'react-icons/tb';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faScrewdriverWrench, faSave as faSaveIcon } from '@fortawesome/free-solid-svg-icons';
-
+import { FaAlignJustify } from 'react-icons/fa';
+import { FaCalendarAlt } from 'react-icons/fa';
 
 
 
@@ -388,7 +388,7 @@ const EditExpense = () => {
                       <div className="col-12 col-md-4">
                         <InputGroup>
                           <InputGroup.Text>
-                            <FaPlus />
+                            <FaCalendarAlt />
                           </InputGroup.Text>
                           <Form.Control
                             type="date"
@@ -402,7 +402,7 @@ const EditExpense = () => {
                       <div className="col-12 col-md-4">
                         <InputGroup>
                           <InputGroup.Text>
-                            <FaPlus />
+                            <FaAlignJustify />
                           </InputGroup.Text>
                           <Form.Control
                             type="text"
@@ -442,7 +442,7 @@ const EditExpense = () => {
                           <div className="col-12 col-md-4">
                             <InputGroup>
                               <InputGroup.Text>
-                                <FaPlus />
+                                <FaCalendarAlt />
                               </InputGroup.Text>
                               <Form.Control
                                 type="date"
@@ -456,7 +456,7 @@ const EditExpense = () => {
                           <div className="col-12 col-md-4">
                             <InputGroup>
                               <InputGroup.Text>
-                                <FaPlus />
+                                <FaAlignJustify />
                               </InputGroup.Text>
                               <Form.Control
                                 type="text"
@@ -496,7 +496,7 @@ const EditExpense = () => {
                               <div className="col-12 col-md-4">
                                 <InputGroup>
                                   <InputGroup.Text>
-                                    <FaPlus />
+                                    <FaCalendarAlt />
                                   </InputGroup.Text>
                                   <Form.Control
                                     type="date"
@@ -510,7 +510,7 @@ const EditExpense = () => {
                               <div className="col-12 col-md-4">
                                 <InputGroup>
                                   <InputGroup.Text>
-                                    <FaPlus />
+                                    <FaAlignJustify />
                                   </InputGroup.Text>
                                   <Form.Control
                                     type="text"
