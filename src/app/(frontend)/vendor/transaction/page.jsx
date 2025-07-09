@@ -466,7 +466,7 @@ const ViewVendorTransaction = () => {
                         </Button>
                         <Button
                           variant="warning"
-                          onClick={() => router.push(`/editvendor-transaction/${txn.id}`)}
+                          onClick={() => router.push(`/vendor/transaction/edit/${txn.id}`)}
                         >
                           <PencilSquare />
                         </Button>

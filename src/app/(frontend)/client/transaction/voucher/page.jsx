@@ -540,7 +540,7 @@ const VoucherClientTransaction = () => {
                         </Button>
                         <Button
                           variant="warning"
-                          onClick={() => router.push(`/editclient-transaction/${txn.id}`)}
+                          onClick={() => router.push(`/client/transaction/edit/${txn.id}`)}
                         >
                           <PencilSquare />
                         </Button>
