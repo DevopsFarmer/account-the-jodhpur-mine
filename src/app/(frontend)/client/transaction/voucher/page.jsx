@@ -626,29 +626,7 @@ const VoucherClientTransaction = () => {
                       <p className="mb-1 fw-bold text-dark">Total Amount</p>
                       <p className="text-success">
                         <FaRupeeSign />{" "}
-                        {selectedTransaction.totalAmount?.toFixed(2)}
-                      </p>
-                    </div>
-                  </Col>
-                  <Col xs={12} md={4}>
-                    <div className="bg-light rounded shadow-sm p-2">
-                      <p className="mb-1 fw-bold text-dark">Received Amount</p>
-                      <p className="text-primary">
-                        <FaRupeeSign />{" "}
                         {selectedTransaction.totalAmountclient?.toFixed(2)}
-                      </p>
-                    </div>
-                  </Col>
-                  <Col xs={12} md={4}>
-                    <div className="bg-light rounded shadow-sm p-2">
-                      <p className="mb-1 fw-bold text-dark">Remaining Amount</p>
-                      <p className="text-danger">
-                        <FaRupeeSign />{" "}
-                        {(
-                          selectedTransaction.remainingAmount ||
-                          (selectedTransaction.totalAmount -
-                            selectedTransaction.totalAmountclient)
-                        ).toFixed(2)}
                       </p>
                     </div>
                   </Col>

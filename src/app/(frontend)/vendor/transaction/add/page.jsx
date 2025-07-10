@@ -4,7 +4,8 @@
 // Import necessary React hooks and components from 'react' and 'next/navigation'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-
+import Jodhpur from '../../../location.json';
+import { FaCalendarAlt } from 'react-icons/fa';
 // Import Bootstrap components for layout, forms, buttons, alerts, and spinners
 import { Container, Form, Button, Row, Col, Alert, Spinner, Card, Badge } from 'react-bootstrap';
 
@@ -25,7 +26,12 @@ const AddVendorTransaction = () => {
   const [vendors, setVendors] = useState([]);
   const [loadingVendors, setLoadingVendors] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [villages, setVillages] = useState([]);
 
+  useEffect(() => {
+    const allVillages = Jodhpur.sub_districts?.[0]?.villages || [];
+    setVillages(allVillages);
+  }, []);
   // Form state aligned with VendorTransactions collection
   const [form, setForm] = useState({
     vendorName: '',
@@ -430,7 +436,7 @@ const AddVendorTransaction = () => {
                       )}
                     </Form.Group>
                   </Col>
-                  <Col md={6} className="mb-3">
+                  {/* <Col md={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="fw-bold fs-5">
                         <FaMapMarkerAlt className="me-1" /> NearBy Village
@@ -458,7 +464,30 @@ const AddVendorTransaction = () => {
                         </datalist>
                       )}
                     </Form.Group>
-                  </Col>
+                  </Col> */}
+
+                    <Col md={6}>
+                                              <Form.Group className="mb-3">
+                                                <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
+                                                <Form.Select
+                                                  name="near_village"
+                                                  value={form.near_village}
+                                                  onChange={handleFormChange}
+                                                  required
+                                                >
+                                                  <option value="">-- Select Village --</option>
+                                                  {villages.map((village) => (
+                                                    <option key={village} value={village}>
+                                                      {village}
+                                                    </option>
+                                                  ))}
+                                                </Form.Select>
+                                                <Form.Control.Feedback type="invalid">
+                                                  Nearby Village is required.
+                                                </Form.Control.Feedback>
+                                              </Form.Group>
+                                            </Col>
+
                 </Row>
               </Card.Body>
             </Card>
@@ -566,7 +595,21 @@ const AddVendorTransaction = () => {
                         className="p-2"
                       />
                     </Col>
-                    <Col xs={8} md={3}>
+                           <Col xs={12} md={3} className="mb-3">
+                      <Form.Label className="fw-bold">
+                        <FaCalendarAlt className="me-2" />
+                        Stage Date <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        placeholder="Stage Date"
+                        value={stage.stageDate}
+                        onChange={(e) => updateStageClient(index, 'stageDate', e.target.value)}
+                        className="p-2"
+                        required
+                      />
+                    </Col>
+                    {/* <Col xs={8} md={3}>
                       <Form.Control
                         type="date"
                         placeholder="Stage Date"
@@ -575,7 +618,7 @@ const AddVendorTransaction = () => {
                         className="p-2"
                         required
                       />
-                    </Col>
+                    </Col> */}
                     <Col xs={4} md={2} className="d-flex justify-content-end">
                       <Button
                         variant="danger"
