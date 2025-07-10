@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Container, Form, Row, Col, InputGroup, Button, Spinner, Alert } from "react-bootstrap";
 import { FaPlus, FaTrash, FaRupeeSign } from "react-icons/fa";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faScrewdriverWrench, faSave as faSaveIcon } from '@fortawesome/free-solid-svg-icons';
+import { faSave as faSaveIcon } from '@fortawesome/free-solid-svg-icons';
 import { FaAlignJustify } from 'react-icons/fa';
 import { FaCalendarAlt } from 'react-icons/fa';
 

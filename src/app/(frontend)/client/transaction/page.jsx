@@ -5,7 +5,7 @@
 // Import necessary React hooks and components from 'react' and 'next/navigation'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Jodhpur from './Jodhpur.json';
+import Jodhpur from '../../location.json';
 // Import Bootstrap components for layout, forms, buttons, alerts, and spinners
 import { Container, Form, Button, Row, Col, Alert, Spinner, Card } from 'react-bootstrap';
 
@@ -26,6 +26,14 @@ const ClientTransaction = () => {
   const [clients, setClients] = useState([]); // Stores the list of available clients
   const [loadingClients, setLoadingClients] = useState(true); // Indicates if client data is currently being loaded
   const [submitting, setSubmitting] = useState(false); // Indicates if the form is currently being submitted
+
+  const [villages, setVillages] = useState([]);
+
+  useEffect(() => {
+    const allVillages = Jodhpur.sub_districts?.[0]?.villages || [];
+    setVillages(allVillages);
+  }, []);
+
 
   // Form state to hold the values of input fields.
   const [form, setForm] = useState({
@@ -337,7 +345,7 @@ const ClientTransaction = () => {
                       )}
                     </Form.Group>
                   </Col>
-                  <Col md={6} className="mb-3">
+                  {/* <Col md={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="fw-bold fs-5">
                         <FaMapMarkerAlt className="me-1" /> Village
@@ -353,7 +361,6 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
-
                       {(form.near_village.length >= 2 || Jodhpur.length > 0) && (
                         <datalist id="near-village-options">
                           {[
@@ -371,7 +378,29 @@ const ClientTransaction = () => {
                         </datalist>
                       )}
                     </Form.Group>
-                  </Col>
+                  </Col> */}
+
+                   <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
+                                <Form.Select
+                                  name="near_village"
+                                  value={form.near_village}
+                                  onChange={handleFormChange}
+                                  required
+                                >
+                                  <option value="">-- Select Village --</option>
+                                  {villages.map((village) => (
+                                    <option key={village} value={village}>
+                                      {village}
+                                    </option>
+                                  ))}
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">
+                                  Nearby Village is required.
+                                </Form.Control.Feedback>
+                              </Form.Group>
+                            </Col>
 
                 </Row>
               </Card.Body>

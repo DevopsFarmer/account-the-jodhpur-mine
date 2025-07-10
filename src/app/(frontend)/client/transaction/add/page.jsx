@@ -5,13 +5,14 @@
 
   // Import Bootstrap components for layout, forms, buttons, alerts, and spinners
   import { Container, Form, Button, Row, Col, Alert, Spinner, Card, Badge } from 'react-bootstrap';
-
+import Jodhpur from '../../../location.json';
   // Import icons from various libraries for a richer UI
   import { TbTransactionRupee, TbPlus, TbCreditCard, TbTrashFilled } from 'react-icons/tb';
   import { FaSave, FaExclamationTriangle, FaUserTie, FaMapMarkerAlt, FaCoins, FaPencilAlt, FaUndo, FaClock } from 'react-icons/fa';
   import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
   import { faIndianRupeeSign, faScrewdriverWrench, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons';
-
+import { FaAlignJustify } from 'react-icons/fa';
+import { FaCalendarAlt } from 'react-icons/fa';
 
   // Main functional component for adding client transactions
   const AddClientTransaction = () => {
@@ -23,6 +24,13 @@
     const [clients, setClients] = useState([]);
     const [loadingClients, setLoadingClients] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+
+    const [villages, setVillages] = useState([]);
+
+    useEffect(() => {
+      const allVillages = Jodhpur.sub_districts?.[0]?.villages || [];
+      setVillages(allVillages);
+    }, []);
 
     // Form state aligned with ClientTransactions collection
     const [form, setForm] = useState({
@@ -432,7 +440,7 @@
                         )}
                       </Form.Group>
                     </Col>
-                    <Col md={6} className="mb-3">
+                    {/* <Col md={6} className="mb-3">
                       <Form.Group>
                         <Form.Label className="fw-bold fs-5">
                           <FaMapMarkerAlt className="me-1" /> NearBy Village
@@ -459,6 +467,30 @@
                               ))}
                           </datalist>
                         )}
+                      </Form.Group>
+                    </Col> */}
+
+
+
+                    <Col md={6} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="fw-bold fs-5">
+                          <FaMapMarkerAlt className="me-1" /> NearBy Village
+                          <span className="text-danger ms-1">*</span>
+                        </Form.Label>
+                        <Form.Select
+                          name="near_village"
+                          value={form.near_village}
+                          onChange={handleFormChange}
+                          required
+                        >
+                          <option value="">-- Select Village --</option>
+                          {villages.map((village) => (
+                            <option key={village} value={village}>
+                              {village}
+                            </option>
+                          ))}
+                        </Form.Select>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -569,16 +601,21 @@
                               className="p-2"
                             />
                           </Col>
-                          <Col xs={8} md={3}>
-                            <Form.Control
-                              type="date"
-                              placeholder="Stage Date"
-                              value={stage.stageDate}
-                              onChange={(e) => updateStageClient(index, 'stageDate', e.target.value)}
-                              className="p-2"
-                              required
-                            />
-                          </Col>
+                          <Col xs={12} md={3} className="mb-3">
+  <Form.Label className="fw-bold">
+    <FaCalendarAlt className="me-2" />
+    Stage Date <span className="text-danger">*</span>
+  </Form.Label>
+  <Form.Control
+    type="date"
+    placeholder="Stage Date"
+    value={stage.stageDate}
+    onChange={(e) => updateStageClient(index, 'stageDate', e.target.value)}
+    className="p-2"
+    required
+  />
+</Col>
+
                           <Col xs={4} md={2} className="d-flex justify-content-end">
                             <Button
                               variant="danger"
