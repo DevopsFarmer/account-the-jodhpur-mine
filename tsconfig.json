@@ -38,7 +38,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-, "src/app/(frontend)/dashboard/page.jsx", "src/app/(frontend)/ClientBootstrap.tsx"  ],
+, "src/app/(frontend)/dashboard/page.jsx", "src/app/(frontend)/ClientBootstrap.tsx", "src/app/(frontend)/Navbar/navItems.jsx"  ],
   "exclude": [
     "node_modules"
   ]

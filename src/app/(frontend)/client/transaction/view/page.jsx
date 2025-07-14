@@ -217,7 +217,7 @@ const ViewClientTransaction = () => {
       if (!transactionToUpdate) return;
 
       const newStatus =
-        transactionToUpdate.paymentstatus === "pending" ? "paid" : "pending";
+        transactionToUpdate.paymentstatus === "pending" ? "Received" : "pending";
 
       await fetch(`/api/client-transaction/${id}`, {
         method: "PATCH",

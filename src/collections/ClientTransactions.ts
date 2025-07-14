@@ -8,11 +8,16 @@ export const ClientTransactions: CollectionConfig = {
   admin: {
     useAsTitle: 'voucherNo',
   },
+  access: {
+    read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
+    create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' || user?.role === 'guest',
+    update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
+    delete: ({ req: { user } }) => user?.role === 'admin' ,
+  },
   hooks: {
     beforeChange: [
       async ({ data, operation }) => {
         if (operation === 'create') {
-          // Generate a unique voucher number in format: V-YYYYMMDD-XXXXX
           const date = new Date();
           const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
           const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -42,6 +47,24 @@ export const ClientTransactions: CollectionConfig = {
     },
     {
       name: 'query_license',
+      type: 'relationship',
+      relationTo: 'client-accounts',
+      required: true,
+    },
+    {
+      name: 'state',
+      type: 'relationship',
+      relationTo: 'client-accounts',
+      required: true,
+    },
+    {
+      name: 'district',
+      type: 'relationship',
+      relationTo: 'client-accounts',
+      required: true,
+    },
+    {
+      name: 'tehsil',
       type: 'relationship',
       relationTo: 'client-accounts',
       required: true,

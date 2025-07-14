@@ -5,6 +5,12 @@ export const Vendor: CollectionConfig = {
   admin: {
     useAsTitle: 'vendorName',
   },
+  access: {
+    read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager',
+    create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
+    update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
+    delete: ({ req: { user } }) => user?.role === 'admin' ,
+  },
   fields: [
     {
       name: 'vendorName',

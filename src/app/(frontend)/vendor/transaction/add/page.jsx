@@ -4,7 +4,7 @@
 // Import necessary React hooks and components from 'react' and 'next/navigation'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Jodhpur from '../../../location.json';
+import locationData from '../../../India-state-city-subDistrict-village.json';
 import { FaCalendarAlt } from 'react-icons/fa';
 // Import Bootstrap components for layout, forms, buttons, alerts, and spinners
 import { Container, Form, Button, Row, Col, Alert, Spinner, Card, Badge } from 'react-bootstrap';
@@ -27,11 +27,69 @@ const AddVendorTransaction = () => {
   const [loadingVendors, setLoadingVendors] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [villages, setVillages] = useState([]);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [tehsils, setTehsils] = useState([]);
+  const [isOtherDistrict, setIsOtherDistrict] = useState(false);
 
   useEffect(() => {
-    const allVillages = Jodhpur.sub_districts?.[0]?.villages || [];
-    setVillages(allVillages);
+    // Extract states from location data
+    const allStates = locationData.map(state => state.state);
+    setStates(allStates);
   }, []);
+
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      
+      if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
+        const valid = value.replace(/[^a-z ]/g, '');
+        setForm(prev => ({ ...prev, [name]: valid }));
+        return;
+      }
+  
+      if (name === 'state') {
+        const selected = locationData.find(s => s.state === value);
+        const distList = selected?.districts.map(d => d.district) || [];
+        setDistricts([...distList, 'Other']);
+        setTehsils([]);
+        setVillages([]);
+        setForm(prev => ({ ...prev, state: value, district: '', tehsil: '', near_village: '' }));
+        setIsOtherDistrict(false);
+        return;
+      }
+  
+      if (name === 'district') {
+        if (value === 'Other') {
+          setIsOtherDistrict(true);
+          setForm(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+          setTehsils([]);
+          setVillages([]);
+        } else {
+          const stateData = locationData.find(s => s.state === form.state);
+          const districtData = stateData?.districts.find(d => d.district === value);
+          const tehsilList = districtData?.subDistricts.map(t => t.subDistrict) || [];
+          setTehsils(tehsilList);
+          setVillages([]);
+          setForm(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+          setIsOtherDistrict(false);
+        }
+        return;
+      }
+  
+      if (name === 'tehsil') {
+        const stateData = locationData.find(s => s.state === form.state);
+        const districtData = stateData?.districts.find(d => d.district === form.district);
+        const tehsilData = districtData?.subDistricts.find(t => t.subDistrict === value);
+        const villageList = tehsilData?.villages || [];
+        setVillages(villageList);
+        setForm(prev => ({ ...prev, tehsil: value, near_village: '' }));
+        return;
+      }
+  
+      setForm(prev => ({ ...prev, [name]: value }));
+    };
+
   // Form state aligned with VendorTransactions collection
   const [form, setForm] = useState({
     vendorName: '',
@@ -406,8 +464,7 @@ const AddVendorTransaction = () => {
                         </datalist>
                       )}
                     </Form.Group>
-                  </Col>
-                  <Col md={6} className="mb-3">
+                 
                     <Form.Group>
                       <Form.Label className="fw-bold fs-5">
                         <TbCreditCard className="me-1" /> Query License
@@ -435,58 +492,69 @@ const AddVendorTransaction = () => {
                         </datalist>
                       )}
                     </Form.Group>
-                  </Col>
-                  {/* <Col md={6} className="mb-3">
-                    <Form.Group>
-                      <Form.Label className="fw-bold fs-5">
-                        <FaMapMarkerAlt className="me-1" /> NearBy Village
-                        <span className="text-danger ms-1">*</span>
-                      </Form.Label>
-                      <Form.Control
-                        list="near-village-options"
-                        name="near_village"
-                        value={form.near_village}
-                        onChange={handleFormChange}
-                        placeholder="Select or type Village"
-                        required
-                        className="p-2"
-                      />
-                      {form.near_village.length >= 2 && (
-                        <datalist id="near-village-options">
-                          {getUniqueNearVillages()
-                            .filter(village =>
-                              village.toLowerCase().includes(form.near_village.toLowerCase())
-                            )
-                            .slice(0, 10)
-                            .map((village, index) => (
-                              <option key={`village-${index}`} value={village} />
-                            ))}
-                        </datalist>
-                      )}
-                    </Form.Group>
-                  </Col> */}
-
-                    <Col md={6}>
-                                              <Form.Group className="mb-3">
-                                                <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
-                                                <Form.Select
-                                                  name="near_village"
-                                                  value={form.near_village}
-                                                  onChange={handleFormChange}
-                                                  required
-                                                >
-                                                  <option value="">-- Select Village --</option>
-                                                  {villages.map((village) => (
-                                                    <option key={village} value={village}>
-                                                      {village}
-                                                    </option>
-                                                  ))}
-                                                </Form.Select>
-                                                <Form.Control.Feedback type="invalid">
-                                                  Nearby Village is required.
-                                                </Form.Control.Feedback>
-                                              </Form.Group>
-                                            </Col>
+                 
+                             <Row>
+                               <Col md={6}>
+                                 <Form.Group className="mb-3">
+                                   <Form.Label className="fw-bold fs-5">State <span className="text-danger">*</span></Form.Label>
+                                   <Form.Select name="state" value={form.state} onChange={handleChange} required>
+                                     <option value="">-- Select State --</option>
+                                     {states.map(s => <option key={s} value={s}>{s}</option>)}
+                                   </Form.Select>
+                                   <Form.Control.Feedback type="invalid">State is required.</Form.Control.Feedback>
+                                 </Form.Group>
+                               </Col>
+                               <Col md={6}>
+                                 <Form.Group className="mb-3">
+                                   <Form.Label className="fw-bold fs-5">District <span className="text-danger">*</span></Form.Label>
+                                   {isOtherDistrict ? (
+                                     <div className="d-flex align-items-center gap-2">
+                                       <Form.Control type="text" name="district" placeholder="Enter district" pattern="^[a-z ]+$" required value={form.district} onChange={handleChange} />
+                                       <Button variant="outline-danger" onClick={() => { setIsOtherDistrict(false); setForm({ ...form, district: '', tehsil: '', near_village: '' }); }}>
+                                         <FaXmark size={20} className="text-center fw-bold fs-5"/>
+                                       </Button>
+                                     </div>
+                                   ) : (
+                                     <Form.Select name="district" value={form.district} onChange={handleChange} required>
+                                       <option value="">-- Select District --</option>
+                                       {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                                     </Form.Select>
+                                   )}
+                                   <Form.Control.Feedback type="invalid">District is required.</Form.Control.Feedback>
+                                 </Form.Group>
+                               </Col>
+                             </Row>
+                             <Row>
+                               <Col md={6}>
+                                 <Form.Group className="mb-3">
+                                   <Form.Label className="fw-bold fs-5">Tehsil <span className="text-danger">*</span></Form.Label>
+                                   {isOtherDistrict ? (
+                                     <Form.Control type="text" name="tehsil" placeholder="Enter tehsil" pattern="^[a-z ]+$" required value={form.tehsil} onChange={handleChange} />
+                                   ) : (
+                                     <Form.Select name="tehsil" value={form.tehsil} onChange={handleChange} required>
+                                       <option value="">-- Select Tehsil --</option>
+                                       {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
+                                     </Form.Select>
+                                   )}
+                                   <Form.Control.Feedback type="invalid">Tehsil is required.</Form.Control.Feedback>
+                                 </Form.Group>
+                               </Col>
+                               <Col md={6}>
+                                 <Form.Group className="mb-3">
+                                   <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
+                                   {isOtherDistrict ? (
+                                     <Form.Control type="text" name="near_village" placeholder="Enter village" pattern="^[a-z ]+$" required value={form.near_village} onChange={handleChange} />
+                                   ) : (
+                                     <Form.Select name="near_village" value={form.near_village} onChange={handleChange} required>
+                                       <option value="">-- Select Village --</option>
+                                       {villages.map(v => <option key={v} value={v}>{v}</option>)}
+                                     </Form.Select>
+                                   )}
+                                   <Form.Control.Feedback type="invalid">Nearby Village is required.</Form.Control.Feedback>
+                                 </Form.Group>
+                               </Col>
+                             </Row>
+                           </Col>
 
                 </Row>
               </Card.Body>

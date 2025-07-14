@@ -1,178 +1,81 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { Container, Row, Col, Card } from "react-bootstrap";
+import { FaExchangeAlt, FaWallet, FaReceipt } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import "./styles.css";
 
-"use client"; 
-import React from "react"; 
-import { Container, Row, Col, Card, Navbar, Nav, Button } from "react-bootstrap";
-
-import { FaExchangeAlt, FaWallet, FaReceipt } from "react-icons/fa"; 
-
-import { useRouter } from "next/navigation"; 
-import "./styles.css"; 
+const cardStyles = {
+  base: "text-center w-100 shadow cursor-pointer",
+  transition: { cursor: "pointer", transition: "all 0.3s ease" },
+};
 
 const Dashboard = () => {
   const router = useRouter();
+  const [role, setRole] = useState("");
 
-  let Userdata;
-  let Token;
-  if (typeof window !== "undefined") {
-    Userdata = localStorage.getItem("user");
-    Token = localStorage.getItem("token");
-  } else {
-    Userdata = null;
-    Token = null;
-    Userdata = null;
-    Token = null;
-  }
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
+      if (user) {
+        const parsed = JSON.parse(user);
+        setRole(parsed?.role || "");
+      }
+    }
+  }, []);
 
-  let UserRole;
-  if (Userdata) {
-    const parsedUser = JSON.parse(Userdata); // Convert string to object
-    UserRole = parsedUser.role ? parsedUser.role : ""; // Get role or set to "client"
-  }
+  const handleClick = (path) => router.push(path);
 
-  const handleLogout = () => {
-    localStorage.clear()
-    window.location.href = '/'
-  }
+  const cardData = {
+    admin: [
+      { icon: <FaExchangeAlt size={60} />, title: "Clients Transaction", text: "View all client transactions", path: "/client/transaction/add", bg: "bg-warning", textColor: "text-dark" },
+      { icon: <FaExchangeAlt size={60} />, title: "Vendor Transactions", text: "View all vendor transactions", path: "/vendor/transaction", bg: "bg-dark", textColor: "text-warning" },
+      { icon: <FaWallet size={60} />, title: "Client Accounts", text: "Manage client accounts", path: "/client/account", bg: "bg-warning", textColor: "text-dark" },
+      { icon: <FaWallet size={60} />, title: "Vendor Accounts", text: "Manage vendor accounts", path: "/vendor/account", bg: "bg-dark", textColor: "text-warning" },
+      { icon: <FaReceipt size={65} />, title: "Expenses", text: "Track and manage expenses", path: "/expense", bg: "", textColor: "text-warning", customBg: "navy", border: "border-4 border-warning" },
+    ],
+    manager: [
+      { icon: <FaExchangeAlt size={60} />, title: "Clients Transaction", text: "View all client transactions", path: "/client/transaction/add", bg: "bg-warning", textColor: "text-dark" },
+      { icon: <FaExchangeAlt size={60} />, title: "Vendor Transactions", text: "View all vendor transactions", path: "/vendor/transaction", bg: "bg-dark", textColor: "text-warning" },
+      { icon: <FaWallet size={60} />, title: "Client Accounts", text: "Manage client accounts", path: "/client/account", bg: "bg-warning", textColor: "text-dark" },
+      { icon: <FaWallet size={60} />, title: "Vendor Accounts", text: "Manage vendor accounts", path: "/vendor/account", bg: "bg-dark", textColor: "text-warning" },
+    ],
+    guest: [
+      { icon: <FaReceipt size={65} />, title: "Client Transaction", text: "Add a client transaction", path: "/client/transaction/add", bg: "bg-warning", textColor: "text-dark" },
+      { icon: <FaWallet size={60} />, title: "Add Account", text: "Create a new account", path: "/client/account/add", bg: "bg-warning", textColor: "text-dark" },
+    ],
+  };
+
+  const renderCards = (items) =>
+    items.map((item, i) => (
+      <Col xs={12} sm={6} md={4} lg={2} className="d-flex" key={i}>
+        <Card
+          className={`${cardStyles.base} ${item.bg} ${item.textColor} ${item.border || ""}`}
+          style={{ ...cardStyles.transition, backgroundColor: item.customBg }}
+          onClick={() => handleClick(item.path)}
+        >
+          <Card.Body className="d-flex flex-column align-items-center">
+            {item.icon}
+            <Card.Title className="fs-5 fw-bold">{item.title}</Card.Title>
+            <Card.Text className="fs-6 fw-bold">{item.text}</Card.Text>
+          </Card.Body>
+        </Card>
+      </Col>
+    ));
 
   return (
     <div className="min-vh-100" style={{
       backgroundColor: '#1a237e',
-      backgroundImage: 'linear-gradient(135deg,rgb(10, 10, 10) 0%,rgb(26, 72, 139) 100%)',
-     
+      backgroundImage: 'linear-gradient(135deg, #0a0a0a 0%, #1a488b 100%)',
     }}>
-      <Container className="text-center py-4" > 
+      <Container className="text-center py-4">
         <h2 className="fw-bold text-warning">JODHPUR MINES</h2>
-        <p className="text-light fs-5 fw-medium">
-          Financial Management System Dashboard
-        </p>
+        <p className="text-light fs-5 fw-medium">Financial Management System Dashboard</p>
       </Container>
 
-      <Container fluid className="pb-5" style={{
-        maxWidth: '1400px',
-        margin: '0 auto'
-      }}> 
+      <Container fluid className="pb-5" style={{ maxWidth: '1400px', margin: '0 auto' }}>
         <Row className="gx-4 gy-4 d-flex flex-wrap justify-content-center">
-          {UserRole === "manager" && (
-            <>
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-warning text-dark w-100 shadow  cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client/transaction")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaExchangeAlt size={60} className="mb-3 text-dark hover:text-warning" />
-                    <Card.Title className="fs-5 fw-bold">Clients Transaction</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">View all client transactions</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-dark text-warning w-100 shadow  cursor-pointer hover:bg-warning hover:text-dark hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/vendor/transaction")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaExchangeAlt size={60} className="mb-3 text-warning hover:text-dark" />
-                    <Card.Title className="fs-5 fw-bold">Vendor Transactions</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">View all vendor transactions</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-warning text-dark w-100 shadow  cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client/account")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaWallet size={60} className="mb-3 text-dark hover:text-warning" />
-                    <Card.Title className="fs-5 fw-bold">Client Accounts</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">Manage client accounts</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-dark text-warning w-100 shadow  cursor-pointer hover:bg-warning hover:text-dark hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/vendor/account")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaWallet size={60} className="mb-3 text-warning hover:text-dark" />
-                    <Card.Title className="fs-5 fw-bold">Vendor Accounts</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">Manage vendor accounts</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </>
-          )}
-
-          {(UserRole === "admin") && (
-            <>
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-warning text-dark w-100 shadow  cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client/transaction")} >
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaExchangeAlt size={60} className="mb-3 text-dark hover:text-warning" />
-                    <Card.Title className="fs-5 fw-bold">Clients Transaction</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">View all client transactions</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-dark text-warning w-100 shadow  cursor-pointer hover:bg-warning hover:text-dark hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/vendor/transaction")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaExchangeAlt size={60} className="mb-3 text-warning hover:text-dark" />
-                    <Card.Title className="fs-5 fw-bold">Vendor Transactions</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">View all vendor transactions</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-warning text-dark w-100 shadow  cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client/account")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaWallet size={60} className="mb-3 text-dark hover:text-warning" />
-                    <Card.Title className="fs-5 fw-bold">Client Accounts</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">Manage client accounts</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-dark text-warning w-100 shadow  cursor-pointer hover:bg-warning hover:text-dark hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/vendor/account")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaWallet size={60} className="mb-3 text-warning hover:text-dark" />
-                    <Card.Title className="fs-5 fw-bold">Vendor Accounts</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">Manage vendor accounts</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center w-100 shadow border-4 border-warning cursor-pointer"
-                  style={{ backgroundColor: "navy" }} text="warning" onClick={() => router.push("/expense")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaReceipt size={65} className="mb-3 text-warning" />
-                    <Card.Title className="fs-3 fw-bold">Expenses</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">Track and manage expenses</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </>
-          )}
-
-          {UserRole === "guest" && (
-            <>
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-                <Card className="text-center bg-warning text-dark w-100 shadow  cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client/transaction")}>
-                  <Card.Body className="d-flex flex-column align-items-center">
-                    <FaReceipt size={65} className="mb-3 text-dark hover:text-warning" />
-                    <Card.Title className="fs-3 fw-bold">Client Transaction</Card.Title>
-                    <Card.Text className="fs-6 fw-bold">Add a client transactions</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-  <Card className="text-center bg-warning text-dark w-100 shadow  cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client/account/add")}>  
-    <Card.Body className="d-flex flex-column align-items-center">
-      <FaWallet size={60} className="mb-3 text-dark hover:text-warning" />
-      <Card.Title className="fs-5 fw-bold">Add Account</Card.Title>
-      <Card.Text className="fs-6 fw-bold">Create a new account</Card.Text>
-    </Card.Body>
-  </Card>
-</Col>
-            </>
-          )}
+          {renderCards(cardData[role] || [])}
         </Row>
       </Container>
     </div>

@@ -189,6 +189,9 @@ export interface ClientTransaction {
   voucherNo?: string | null;
   clientName: number | ClientAccount;
   query_license: number | ClientAccount;
+  state: number | ClientAccount;
+  district: number | ClientAccount;
+  tehsil: number | ClientAccount;
   near_village: number | ClientAccount;
   workingStage?:
     | {
@@ -447,6 +450,9 @@ export interface ClientTransactionSelect<T extends boolean = true> {
   voucherNo?: T;
   clientName?: T;
   query_license?: T;
+  state?: T;
+  district?: T;
+  tehsil?: T;
   near_village?: T;
   workingStage?:
     | T

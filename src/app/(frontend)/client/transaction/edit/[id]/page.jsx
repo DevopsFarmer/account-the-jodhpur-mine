@@ -473,22 +473,22 @@ const EditClientTransaction = () => {
 
           {/* Calculated Totals: Read-only fields */}
           <Row className="my-4">
-            <Col sm={6} className="pb-3 pb-md-0">
+            {/* <Col sm={6} className="pb-3 pb-md-0">
               <Form.Label className="fw-bold fs-5">Total Amount (Our Side) (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
               <Form.Control value={getTotalAmount().toFixed(2)} readOnly className="bg-white" />
-            </Col>
+            </Col> */}
             <Col sm={6} className="pb-3 pb-md-0">
               <Form.Label className="fw-bold fs-5">Total Amount (Client Side) (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
               <Form.Control value={getTotalAmountClient().toFixed(2)} readOnly className="bg-white" />
             </Col>
           </Row>
 
-          <Row className="my-4">
+          {/* <Row className="my-4">
             <Col sm={12} className="pb-3 pb-md-0">
               <Form.Label className="fw-bold fs-5">Remaining Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
               <Form.Control value={getRemainingAmount().toFixed(2)} readOnly className="bg-white" />
             </Col>
-          </Row>
+          </Row> */}
 
           {/* Description Textarea */}
           <Form.Group className="my-4">
