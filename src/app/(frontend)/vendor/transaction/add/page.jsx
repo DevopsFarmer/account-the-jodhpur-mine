@@ -84,6 +84,9 @@ const AddVendorTransaction = () => {
   const [form, setForm] = useState({
     vendorName: '',
     query_license: '',
+    state: '',
+    district: '',
+    tehsil: '',
     near_village: '',
     description: '',
     paymentstatus: 'pending',
@@ -116,11 +119,7 @@ const AddVendorTransaction = () => {
     return [...new Set(licenses)];
   };
 
-  const getUniqueNearVillages = () => {
-    const villages = vendors.filter((vendor) => vendor.near_village && vendor.near_village.trim() !== '')
-      .map((vendor) => vendor.near_village);
-    return [...new Set(villages)];
-  };
+
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -247,6 +246,9 @@ const AddVendorTransaction = () => {
     setForm({
       vendorName: '',
       query_license: '',
+      state: '',
+      district: '',
+      tehsil: '',
       near_village: '',
       description: '',
       paymentstatus: 'pending',
@@ -266,7 +268,7 @@ const AddVendorTransaction = () => {
     setError("");
     setSuccess("");
 
-    if (!form.vendorName || !form.query_license || !form.near_village) {
+    if (!form.vendorName || !form.query_license || !form.near_village || !form.state || !form.district || !form.tehsil) {
       setError("Please fill in all required fields: Vendor Name, Query License, and Near Village.");
       return;
     }
@@ -281,12 +283,15 @@ const AddVendorTransaction = () => {
       const vendorMatch = vendors.some((vendor) => vendor.vendorName === form.vendorName || vendor.id === form.vendorName);
       const licenseMatch = vendors.some((vendor) => vendor.query_license === form.query_license || vendor.id === form.query_license);
       const villageMatch = vendors.some((vendor) => vendor.near_village === form.near_village || vendor.id === form.near_village);
+      const stateMatch = vendors.some((vendor) => vendor.state === form.state || vendor.id === form.state);
+      const districtMatch = vendors.some((vendor) => vendor.district === form.district || vendor.id === form.district);
+      const tehsilMatch = vendors.some((vendor) => vendor.tehsil === form.tehsil || vendor.id === form.tehsil);
 
-      if (licenseMatch && villageMatch && !vendorMatch) {
+      if (licenseMatch && villageMatch && !vendorMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Vendor Name is incorrect for the selected Query License and Near Village.");
-      } else if (vendorMatch && licenseMatch && !villageMatch) {
+      } else if (vendorMatch && licenseMatch && !villageMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Near Village is incorrect for the selected Vendor Name and Query License.");
-      } else if (vendorMatch && villageMatch && !licenseMatch) {
+      } else if (vendorMatch && villageMatch && !licenseMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Query License is incorrect for the selected Vendor Name and Near Village.");
       } else if (vendorMatch && !licenseMatch && !villageMatch) {
         setError("Both Query License and Near Village are incorrect for the selected Vendor Name.");
@@ -306,6 +311,9 @@ const AddVendorTransaction = () => {
     const payload = {
       vendorName: matchedVendor.id,
       query_license: matchedVendor.id,
+      state: matchedVendor.id,
+      district: matchedVendor.id,
+      tehsil: matchedVendor.id,
       near_village: matchedVendor.id,
       totalAmount: getTotalAmount(),
       totalAmountvendor: getTotalAmountVendor(),
