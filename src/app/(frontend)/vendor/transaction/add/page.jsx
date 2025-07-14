@@ -1,27 +1,19 @@
 
 
-'use client'; // This directive marks the component as a Client Component in Next.js
-// Import necessary React hooks and components from 'react' and 'next/navigation'
+'use client'; 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import locationData from '../../../India-state-city-subDistrict-village.json';
 import { FaCalendarAlt } from 'react-icons/fa';
-// Import Bootstrap components for layout, forms, buttons, alerts, and spinners
 import { Container, Form, Button, Row, Col, Alert, Spinner, Card, Badge } from 'react-bootstrap';
-
-// Import icons from various libraries for a richer UI
 import { TbTransactionRupee, TbPlus, TbCreditCard, TbTrashFilled } from 'react-icons/tb';
-import { FaSave, FaExclamationTriangle, FaUserTie, FaMapMarkerAlt, FaCoins, FaPencilAlt, FaUndo, FaClock } from 'react-icons/fa';
+import { FaSave, FaExclamationTriangle, FaUserTie, FaCoins, FaPencilAlt, FaUndo, FaClock } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faIndianRupeeSign, faScrewdriverWrench, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons';
 
 
-// Main functional component for adding vendor transactions
 const AddVendorTransaction = () => {
-  // Initialize the Next.js router for navigation
   const router = useRouter();
-
-  // State variables to manage component data and UI states
   const [userRole, setUserRole] = useState(null);
   const [vendors, setVendors] = useState([]);
   const [loadingVendors, setLoadingVendors] = useState(true);
@@ -33,7 +25,6 @@ const AddVendorTransaction = () => {
   const [isOtherDistrict, setIsOtherDistrict] = useState(false);
 
   useEffect(() => {
-    // Extract states from location data
     const allStates = locationData.map(state => state.state);
     setStates(allStates);
   }, []);
@@ -90,7 +81,6 @@ const AddVendorTransaction = () => {
       setForm(prev => ({ ...prev, [name]: value }));
     };
 
-  // Form state aligned with VendorTransactions collection
   const [form, setForm] = useState({
     vendorName: '',
     query_license: '',
@@ -99,14 +89,12 @@ const AddVendorTransaction = () => {
     paymentstatus: 'pending',
   });
 
-  // Working stages aligned with collection schema for 'our' side (company's work/expenses related to vendor)
   const [workingStages, setWorkingStages] = useState([{
     workingStage: '',
     workingDescription: '',
     workstatus: 'incomplete'
   }]);
 
-  // Vendor's working stages aligned with collection schema (vendor's charges/payments)
   const [workingStagesVendor, setWorkingStagesVendor] = useState([{
     workingStagevendor: '',
     workingDescriptionvendor: '',
@@ -116,7 +104,6 @@ const AddVendorTransaction = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Helper Functions for Unique Options
   const getUniqueVendorNames = () => {
     const names = vendors.filter((vendor) => vendor.vendorName && vendor.vendorName.trim() !== '')
       .map((vendor) => vendor.vendorName);
@@ -135,7 +122,6 @@ const AddVendorTransaction = () => {
     return [...new Set(villages)];
   };
 
-  // useEffect Hook: Client-Side Access Control
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const userData = localStorage.getItem('user');
@@ -159,13 +145,12 @@ const AddVendorTransaction = () => {
     }
   }, [router]);
 
-  // useEffect Hook: Fetch All Vendor Accounts
   useEffect(() => {
     const fetchVendors = async () => {
       if (userRole === 'admin' || userRole === 'manager') {
         setLoadingVendors(true);
         try {
-          const res = await fetch('/api/vendor?limit=100000'); // Assuming a similar API endpoint for vendors
+          const res = await fetch('/api/vendor?limit=100000');
           if (res.ok) {
             const data = await res.json();
             setVendors(data?.docs || []);
@@ -190,21 +175,27 @@ const AddVendorTransaction = () => {
     }
   }, [userRole]);
 
-  // Event Handlers
   const handleFormChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setError('');
-    setSuccess('');
-  };
+    const { name, value } = e.target;
+    
+    if (name === 'vendorName') {
+      const words = value.split(' ');
+    const titleCase = words.map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+    setForm(prev => ({ ...prev, [name]: titleCase }));
+  } else {
+    setForm(prev => ({ ...prev, [name]: value }));
+  }
+};
 
-  // Updated to match collection schema field names for our side
+
   const updateStage = (index, field, value) => {
     const updated = [...workingStages];
     updated[index][field] = value;
     setWorkingStages(updated);
   };
 
-  // Updated to match collection schema field names for vendor side
   const updateStageVendor = (index, field, value) => {
     const updated = [...workingStagesVendor];
     updated[index][field] = value;
@@ -238,23 +229,17 @@ const AddVendorTransaction = () => {
     }
   };
 
-  // Calculation Functions - Updated to use correct field names
   const getTotalAmount = () => {
-    // This is "totalAmount" in VendorTransactions.ts, representing 'our' cost
     const workTotal = workingStages.reduce((sum, s) => sum + (parseFloat(s.workingDescription) || 0), 0);
     return workTotal;
   };
 
   const getTotalAmountVendor = () => {
-    // This is "totalAmountvendor" in VendorTransactions.ts, representing what vendor charges us
     const workTotalVendor = workingStagesVendor.reduce((sum, s) => sum + (parseFloat(s.workingDescriptionvendor) || 0), 0);
     return workTotalVendor;
   };
 
   const getRemainingAmount = () => {
-    // Remaining amount might be (our total cost) - (vendor's total charges)
-    // Or it could be (vendor's charges) - (our payments to vendor), depending on business logic.
-    // Assuming it's the difference between what we spend and what the vendor charges us.
     return getTotalAmount() - getTotalAmountVendor();
   };
 
@@ -276,7 +261,6 @@ const AddVendorTransaction = () => {
     setSuccess('');
   };
 
-  // Form Submission Handler - Updated payload structure for VendorTransactions
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -319,13 +303,12 @@ const AddVendorTransaction = () => {
 
     setSubmitting(true);
 
-    // Updated payload to match VendorTransactions collection schema
     const payload = {
-      vendorName: matchedVendor.id, // Relationship field, stores ID
-      query_license: matchedVendor.id, // Relationship field, stores ID
-      near_village: matchedVendor.id, // Relationship field, stores ID
-      totalAmount: getTotalAmount(), // Our side's total amount
-      totalAmountvendor: getTotalAmountVendor(), // Vendor's side total amount
+      vendorName: matchedVendor.id,
+      query_license: matchedVendor.id,
+      near_village: matchedVendor.id,
+      totalAmount: getTotalAmount(),
+      totalAmountvendor: getTotalAmountVendor(),
       remainingAmount: getRemainingAmount(),
       workingStage: workingStages.map((s) => ({
         workingStage: s.workingStage,
@@ -370,7 +353,6 @@ const AddVendorTransaction = () => {
     }
   };
 
-  // Conditional Rendering
   if (userRole === null) {
     return (
       <div className="text-center mt-5">
