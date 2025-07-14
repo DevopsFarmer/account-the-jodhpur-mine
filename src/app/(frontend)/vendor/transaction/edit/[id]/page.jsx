@@ -471,7 +471,7 @@ const EditVendorTransaction = () => {
                 <Form.Control
                   type="date"
                   placeholder="Stage Date"
-                  value={stage.stageDate}
+                  value={stage.stageDate ? new Date(stage.stageDate).toISOString().split('T')[0] : ''}
                   onChange={(e) => updateStageVendor(index, 'stageDate', e.target.value)}
                 />
               </Col>

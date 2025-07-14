@@ -31,51 +31,45 @@ const formatTime = (dateString) => {
 const EditClientTransaction = () => {
   const router = useRouter();
   const params = useParams();
-  const transactionId = params.id; // Get the transaction ID from the URL
+  const transactionId = params.id; 
 
   const [userRole, setUserRole] = useState(null);
-  const [loading, setLoading] = useState(true); // For initial data fetch and role check
-  const [submitting, setSubmitting] = useState(false); // For form submission
+  const [loading, setLoading] = useState(true); 
+  const [submitting, setSubmitting] = useState(false); 
 
-  // Main form state, initialized with empty strings
   const [form, setForm] = useState({
-    clientName: "", // Display name
-    query_license: "", // Display value
-    near_village: "", // Display value
+    clientName: "", 
+    query_license: "", 
+    near_village: "", 
     description: "",
-    paymentstatus: "", // Display value
-    totalAmount: "", // This will correspond to our working stages total
-    totalAmountclient: "", // This will correspond to client working stages total
-    remainingAmount: "", // Calculated field
+    paymentstatus: "", 
+    totalAmount: "", 
+    totalAmountclient: "", 
+    remainingAmount: "", 
   });
 
-  // State to store actual IDs for relationship fields (for PATCH payload)
   const [clientId, setClientId] = useState("");
   const [queryLicenseId, setQueryLicenseId] = useState("");
   const [nearVillageId, setNearVillageId] = useState("");
-
-  // Working stages for our side (matching collection schema)
   const [workingStages, setWorkingStages] = useState([{ 
     workingStage: "", 
     workingDescription: "",
-    workstatus: "incomplete" // Default value as per schema
+    workstatus: "incomplete" 
   }]);
   
-  // Working stages for the client side (matching collection schema)
   const [workingStagesClient, setWorkingStagesClient] = useState([{ 
     workingStageclient: "", 
     workingDescriptionclient: "", 
     stageDate: ""
   }]);
 
-  // State for read-only creation date
   const [clientCreatedAt, setClientCreatedAt] = useState("");
   const [clientUpdatedAt, setClientUpdatedAt] = useState("");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // 1. Client-Side Access Control
+    // 1. Client-Side Access Control
   useEffect(() => {
     if (typeof window !== "undefined") {
       const userData = localStorage.getItem("user");
@@ -108,9 +102,8 @@ const EditClientTransaction = () => {
         try {
           const res = await fetch(`/api/client-transaction/${transactionId}`);
           const data = await res.json();
-
+          console.log(data.workingStageclient[0].stageDate);
           if (res.ok) {
-            // Populate form fields with fetched data
             setForm({
               clientName: data.clientName?.clientName || "",
               query_license: data.query_license?.query_license || "",
@@ -122,12 +115,9 @@ const EditClientTransaction = () => {
               remainingAmount: data.remainingAmount?.toString() || "",
             });
 
-            // Set actual IDs for PATCH request
             setClientId(data.clientName?.id || data.clientName?._id || "");
             setQueryLicenseId(data.query_license?.id || data.query_license?._id || "");
             setNearVillageId(data.near_village?.id || data.near_village?._id || "");
-
-            // Set working stages; if none exist, initialize with one empty stage
             setWorkingStages(data.workingStage?.length > 0 ?
               data.workingStage.map(s => ({ 
                 workingStage: s.workingStage || '', 
@@ -166,7 +156,6 @@ const EditClientTransaction = () => {
     }
   }, [transactionId, userRole]);
 
-  // Handle changes in main form input fields (only for editable fields)
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -174,23 +163,20 @@ const EditClientTransaction = () => {
     setSuccess("");
   };
 
-  // Handle changes within a specific working stage input (Our Side)
   const updateStage = (index, field, value) => {
     const updated = [...workingStages];
     updated[index] = { ...updated[index], [field]: value };
     setWorkingStages(updated);
   };
 
-  // Add a new empty working stage row (Our Side)
   const addStage = () => {
     setWorkingStages([...workingStages, { 
       workingStage: "", 
       workingDescription: "",
-      workstatus: "incomplete" // Default value
+      workstatus: "incomplete" 
     }]);
   };
 
-  // Remove a working stage row (Our Side) by its index
   const removeStage = (index) => {
     if (workingStages.length > 1) {
       const updated = workingStages.filter((_, i) => i !== index);
@@ -198,14 +184,12 @@ const EditClientTransaction = () => {
     }
   };
 
-  // Handle changes within a specific working stage input (Client Side)
   const updateStageClient = (index, field, value) => {
     const updated = [...workingStagesClient];
     updated[index] = { ...updated[index], [field]: value };
     setWorkingStagesClient(updated);
   };
 
-  // Add a new empty working stage row (Client Side)
   const addStageClient = () => {
     setWorkingStagesClient([...workingStagesClient, { 
       workingStageclient: "", 
@@ -214,7 +198,6 @@ const EditClientTransaction = () => {
     }]);
   };
 
-  // Remove a working stage row (Client Side) by its index
   const removeStageClient = (index) => {
     if (workingStagesClient.length > 1) {
       const updated = workingStagesClient.filter((_, i) => i !== index);
@@ -222,31 +205,25 @@ const EditClientTransaction = () => {
     }
   };
 
-  // Calculate totalAmount (from our working stages)
   const getTotalAmount = () => {
     const workTotal = workingStages.reduce((sum, s) => sum + (parseFloat(s.workingDescription) || 0), 0);
     return workTotal;
   };
-
-  // Calculate totalAmountclient (from client's working stages)
   const getTotalAmountClient = () => {
     const workTotalClient = workingStagesClient.reduce((sum, s) => sum + (parseFloat(s.workingDescriptionclient) || 0), 0);
     return workTotalClient;
   };
 
-  // Calculate the remaining amount (Our Total Amount - Client Total Amount)
   const getRemainingAmount = () => {
     return getTotalAmount() - getTotalAmountClient();
   };
 
-  // Handle form submission to update the client transaction
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     setSuccess("");
 
-    // Construct the payload for the PATCH request to the backend
     const payload = {
       clientName: clientId,
       query_license: queryLicenseId,
@@ -260,7 +237,7 @@ const EditClientTransaction = () => {
       workingStage: workingStages.map((s) => ({
         workingStage: s.workingStage,
         workingDescription: s.workingDescription,
-        workstatus: s.workstatus // Include workstatus in payload
+        workstatus: s.workstatus
       })),
       workingStageclient: workingStagesClient.map((s) => ({
         workingStageclient: s.workingStageclient,
@@ -296,7 +273,6 @@ const EditClientTransaction = () => {
     }
   };
 
-  // Show loading spinner while initial data or user role is being determined
   if (loading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -306,7 +282,6 @@ const EditClientTransaction = () => {
     );
   }
 
-  // Display unauthorized message if user role is not admin or manager
   if (userRole !== 'admin' && userRole !== 'manager') {
     return (
       <>
@@ -340,13 +315,11 @@ const EditClientTransaction = () => {
         )}
 
         <Form onSubmit={handleSubmit}>
-          {/* Read-only Client Name */}
           <Form.Group className="mb-3">
             <Form.Label className="fw-bold fs-5 text-center text-wrap text-capitalize">Client Name</Form.Label>
             <Form.Control value={form.clientName} readOnly className="bg-light" />
           </Form.Group>
 
-          {/* Read-only Query License and Near Village */}
           <Row className="my-4">
             <Col sm={6} className="pb-3 pb-md-0">
               <Form.Label className="fw-bold fs-5 text-center text-wrap text-capitalize">Query License</Form.Label>
@@ -360,7 +333,6 @@ const EditClientTransaction = () => {
 
           <hr className="my-2" />
 
-          {/* Client Created At and Payment Status */}
           <Row className="my-4">
             <Col sm={4} className="pb-3 pb-md-0">
               <Form.Group className="mb-3">
@@ -384,7 +356,6 @@ const EditClientTransaction = () => {
 
           <hr className="my-2" />
 
-          {/* Section for Dynamic Working Stages (Our Side) */}
           <div className="d-flex justify-content-between align-items-center my-4">
             <h5 className="fw-bold text-dark fs-5">
               <FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" />
@@ -471,7 +442,7 @@ const EditClientTransaction = () => {
                 <Form.Control
                   type="date"
                   placeholder="Stage Date"
-                  value={stage.stageDate}
+                  value={stage.stageDate ? new Date(stage.stageDate).toISOString().split('T')[0] : ''}
                   onChange={(e) => updateStageClient(index, 'stageDate', e.target.value)}
                   className="p-2"
                   required
