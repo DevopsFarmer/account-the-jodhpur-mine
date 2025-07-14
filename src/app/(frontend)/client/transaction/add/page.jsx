@@ -128,11 +128,7 @@ const AddClientTransaction = () => {
     return [...new Set(licenses)];
   };
 
-  const getUniqueNearVillages = () => {
-    const villages = clients.filter((client) => client.near_village && client.near_village.trim() !== '')
-      .map((client) => client.near_village);
-    return [...new Set(villages)];
-  };
+
 
   // useEffect Hook: Client-Side Access Control
   useEffect(() => {
@@ -265,6 +261,9 @@ const AddClientTransaction = () => {
     setForm({
       clientName: '',
       query_license: '',
+      state: '',
+      district: '',
+      tehsil: '',
       near_village: '',
       description: '',
       paymentstatus: 'pending',
@@ -289,33 +288,39 @@ const AddClientTransaction = () => {
     setError("");
     setSuccess("");
 
-    if (!form.clientName || !form.query_license || !form.near_village) {
-      setError("Please fill in all required fields: Client Name, Query License, and Near Village.");
+    if (!form.clientName || !form.query_license || !form.state || !form.district || !form.tehsil || !form.near_village) {
+      setError("Please fill in all required fields: Client Name, Query License, State, District, Tehsil, and Near Village.");
       return;
     }
 
     const matchedClient = clients.find((client) =>
       (client.clientName === form.clientName || client.id === form.clientName) &&
       (client.query_license === form.query_license || client.id === form.query_license) &&
+      (client.state === form.state || client.id === form.state) &&
+      (client.district === form.district || client.id === form.district) &&
+      (client.tehsil === form.tehsil || client.id === form.tehsil) &&
       (client.near_village === form.near_village || client.id === form.near_village)
     );
 
     if (!matchedClient) {
       const clientMatch = clients.some((client) => client.clientName === form.clientName || client.id === form.clientName);
       const licenseMatch = clients.some((client) => client.query_license === form.query_license || client.id === form.query_license);
+      const stateMatch = clients.some((client) => client.state === form.state || client.id === form.state);
+      const districtMatch = clients.some((client) => client.district === form.district || client.id === form.district);
+      const tehsilMatch = clients.some((client) => client.tehsil === form.tehsil || client.id === form.tehsil);
       const villageMatch = clients.some((client) => client.near_village === form.near_village || client.id === form.near_village);
 
-      if (licenseMatch && villageMatch && !clientMatch) {
+      if (licenseMatch && villageMatch && !clientMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Client Name is incorrect for the selected Query License and Near Village.");
-      } else if (clientMatch && licenseMatch && !villageMatch) {
+      } else if (clientMatch && licenseMatch && !villageMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Near Village is incorrect for the selected Client Name and Query License.");
-      } else if (clientMatch && villageMatch && !licenseMatch) {
+      } else if (clientMatch && villageMatch && !licenseMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Query License is incorrect for the selected Client Name and Near Village.");
-      } else if (clientMatch && !licenseMatch && !villageMatch) {
+      } else if (clientMatch && !licenseMatch && !villageMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Both Query License and Near Village are incorrect for the selected Client Name.");
-      } else if (!clientMatch && licenseMatch && !villageMatch) {
+      } else if (!clientMatch && licenseMatch && !villageMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Client Name and Near Village are incorrect for the selected Query License.");
-      } else if (!clientMatch && !licenseMatch && villageMatch) {
+      } else if (!clientMatch && !licenseMatch && villageMatch && !stateMatch && !districtMatch && !tehsilMatch) {
         setError("Client Name and Query License are incorrect for the selected Near Village.");
       } else {
         setError("The provided Client Name, Query License, and Near Village do not match any known client.");
@@ -334,6 +339,9 @@ const AddClientTransaction = () => {
     const payload = {
       clientName: matchedClient.id,
       query_license: matchedClient.id,
+      state: matchedClient.id,
+      district: matchedClient.id,
+      tehsil: matchedClient.id,
       near_village: matchedClient.id,
       totalAmount: getTotalAmount(),
       totalAmountclient: getTotalAmountClient(),
