@@ -9,8 +9,7 @@ const AddVendorAccount = () => {
   const router = useRouter();
 
  // Initialize states - guests get immediate access
-  const [userRole, setUserRole] = useState(isGuest ? 'guest' : null);
-  const [isLoaded, setIsLoaded] = useState(isGuest);
+
 
   // Holds the current form values
   const [formData, setFormData] = useState({
@@ -25,7 +24,6 @@ const AddVendorAccount = () => {
     near_village: ''
   });
 
-  // Validation and UI control states
   const [validated, setValidated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -38,7 +36,6 @@ const AddVendorAccount = () => {
   const [vendorNameWarning, setVendorNameWarning] = useState('');
   const [isOtherDistrict, setIsOtherDistrict] = useState(false);
 
-  // On component mount, get states and user role
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
@@ -59,23 +56,19 @@ const AddVendorAccount = () => {
     setStates(locationData.map(item => item.state));
   }, []);
 
-  // Handle all input changes here
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Convert vendor name to title case
     if (name === 'vendorName') {
-      // First convert to lowercase, then capitalize each word
-      const words = value.toLowerCase().split(' ');
+      const words = value.split(' ');
       const titleCase = words.map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       ).join(' ');
       setFormData(prev => ({ ...prev, [name]: titleCase }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   
-    // Handle special cases for location fields
     if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
       const valid = value.replace(/[^a-z ]/g, '');
       setFormData(prev => ({ ...prev, [name]: valid }));
@@ -121,7 +114,7 @@ const AddVendorAccount = () => {
       return;
     }
   
-    setFormData(prev => ({ ...prev, [name]: value }));
+    // setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   
