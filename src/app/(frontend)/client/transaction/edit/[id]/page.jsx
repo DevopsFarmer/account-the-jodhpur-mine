@@ -64,7 +64,8 @@ const EditClientTransaction = () => {
   // Working stages for the client side (matching collection schema)
   const [workingStagesClient, setWorkingStagesClient] = useState([{ 
     workingStageclient: "", 
-    workingDescriptionclient: "" 
+    workingDescriptionclient: "", 
+    stageDate: ""
   }]);
 
   // State for read-only creation date
@@ -139,9 +140,10 @@ const EditClientTransaction = () => {
             setWorkingStagesClient(data.workingStageclient?.length > 0 ?
               data.workingStageclient.map(s => ({ 
                 workingStageclient: s.workingStageclient || '', 
-                workingDescriptionclient: s.workingDescriptionclient || '' 
+                workingDescriptionclient: s.workingDescriptionclient || '', 
+                stageDate: s.stageDate || '' 
               })) :
-              [{ workingStageclient: "", workingDescriptionclient: "" }]
+              [{ workingStageclient: "", workingDescriptionclient: "", stageDate: "" }]
             );
 
             setClientCreatedAt(data.clientCreatedAt);
@@ -207,7 +209,8 @@ const EditClientTransaction = () => {
   const addStageClient = () => {
     setWorkingStagesClient([...workingStagesClient, { 
       workingStageclient: "", 
-      workingDescriptionclient: "" 
+      workingDescriptionclient: "", 
+      stageDate: ""
     }]);
   };
 
@@ -262,6 +265,7 @@ const EditClientTransaction = () => {
       workingStageclient: workingStagesClient.map((s) => ({
         workingStageclient: s.workingStageclient,
         workingDescriptionclient: s.workingDescriptionclient,
+        stageDate: s.stageDate
       })),
       description: form.description,
     };
@@ -461,6 +465,16 @@ const EditClientTransaction = () => {
                   placeholder="Work Details/Amount"
                   value={stage.workingDescriptionclient}
                   onChange={(e) => updateStageClient(index, 'workingDescriptionclient', e.target.value)}
+                />
+              </Col>
+              <Col sm={2} className="pb-3 pb-md-0">
+                <Form.Control
+                  type="date"
+                  placeholder="Stage Date"
+                  value={stage.stageDate}
+                  onChange={(e) => updateStageClient(index, 'stageDate', e.target.value)}
+                  className="p-2"
+                  required
                 />
               </Col>
               <Col sm={3} className="pb-3 pb-md-0">
