@@ -5,6 +5,12 @@ export const ClientAccounts: CollectionConfig = {
   admin: {
     useAsTitle: 'clientName',
   },
+  access: {
+  read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' || user?.role === 'guest',
+    create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' || user?.role === 'guest',
+    update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
+    delete: ({ req: { user } }) => user?.role === 'admin' ,
+  },
   fields: [
     {
       name: 'clientName',

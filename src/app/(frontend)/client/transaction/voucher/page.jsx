@@ -264,7 +264,7 @@ const VoucherClientTransaction = () => {
       if (!transactionToUpdate) return;
 
       const newStatus =
-        transactionToUpdate.paymentstatus === "pending" ? "paid" : "pending";
+        transactionToUpdate.paymentstatus === "pending" ? "Received" : "pending";
 
       // Update on the server
       await fetch(`/api/client-transaction/${id}`, {
@@ -596,6 +596,21 @@ const VoucherClientTransaction = () => {
                       <FaWrench className="me-2 text-secondary" />
                       <strong>Query License:</strong>{" "}
                       {selectedTransaction.query_license?.query_license || "N/A"}
+                    </p>
+                    <p>
+                      <FaMapMarkerAlt className="me-2 text-secondary" />
+                      <strong>State:</strong>{" "}
+                      {selectedTransaction.state?.state || "N/A"}
+                    </p>
+                    <p>
+                      <FaMapMarkerAlt className="me-2 text-secondary" />
+                      <strong>District:</strong>{" "}
+                      {selectedTransaction.district?.district || "N/A"}
+                    </p>
+                    <p>
+                      <FaMapMarkerAlt className="me-2 text-secondary" />
+                      <strong>Tehsil:</strong>{" "}
+                      {selectedTransaction.tehsil?.tehsil || "N/A"}
                     </p>
                     <p>
                       <FaMapMarkerAlt className="me-2 text-secondary" />

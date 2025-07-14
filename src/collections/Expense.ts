@@ -6,7 +6,12 @@ export const Expense: CollectionConfig = {
   admin: {
     useAsTitle: 'nameOfExpense',
   },
- 
+  access: {
+    read: () => true,
+    create: ({ req: { user } }) => user?.role === 'admin',
+    update: ({ req: { user } }) => user?.role === 'admin',
+    delete: ({ req: { user } }) => user?.role === 'admin',
+  },
   fields: [
     {
       name: 'nameOfExpense',

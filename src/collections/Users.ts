@@ -15,16 +15,9 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   access: {
-    read: () => true,
-    create: () => true,
-    update: ({ req: { user } }) => {
-      if (!user || !('role' in user)) return false;
-      return user.role === 'admin' || user.role === 'manager';
-    },
-    delete: ({ req: { user } }) => {
-      if (!user || !('role' in user)) return false;
-      return user.role === 'admin';
-    },
+    create: ({ req: { user } }) => user?.role === 'admin',
+    delete: ({ req: { user } }) => user?.role === 'admin',
+    update: ({ req: { user } }) => user?.role === 'admin',
   },
 
   fields: [

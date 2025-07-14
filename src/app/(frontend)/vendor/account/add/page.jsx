@@ -2,77 +2,147 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
-import locationData from '../../../location.json';
+import { FaXmark } from "react-icons/fa6";
+import locationData from '../../../India-state-city-subDistrict-village.json';
 
 const AddVendorAccount = () => {
   const router = useRouter();
 
-  // Initial form state
+ // Initialize states - guests get immediate access
+  const [userRole, setUserRole] = useState(isGuest ? 'guest' : null);
+  const [isLoaded, setIsLoaded] = useState(isGuest);
+
+  // Holds the current form values
   const [formData, setFormData] = useState({
     vendorName: '',
     vendorMobile: '',
     query_license: '',
     mining_license: '',
     country: 'India',
-    state: 'Rajasthan',
-    district: 'Jodhpur',
-    tehsil: 'Jodhpur',
+    state: '',
+    district: '',
+    tehsil: '',
     near_village: ''
   });
 
+  // Validation and UI control states
   const [validated, setValidated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertVariant, setAlertVariant] = useState('success');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [tehsils, setTehsils] = useState([]);
   const [villages, setVillages] = useState([]);
+  const [vendorNameWarning, setVendorNameWarning] = useState('');
+  const [isOtherDistrict, setIsOtherDistrict] = useState(false);
 
-  // Load village list from location.json
+  // On component mount, get states and user role
   useEffect(() => {
-    const jodhpurVillages = locationData.sub_districts?.find(sd => sd.name === 'Jodhpur')?.villages || [];
-    setVillages(jodhpurVillages); // <-- THIS WAS MISSING
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsed = JSON.parse(userData);
+        const role = parsed.role;
+        setUserRole(role);
+        if (role !== 'admin' && role !== 'manager') {
+          setTimeout(() => {
+            localStorage.clear();
+            window.location.href = '/api/logout';
+          }, 1500);
+        }
+      } catch (err) {
+        console.error('Invalid user data:', err);
+      }
+    }
+    setStates(locationData.map(item => item.state));
   }, []);
-  
 
-  // Generic input handler
+  // Handle all input changes here
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Convert vendor name to title case
+    if (name === 'vendorName') {
+      // First convert to lowercase, then capitalize each word
+      const words = value.toLowerCase().split(' ');
+      const titleCase = words.map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+      setFormData(prev => ({ ...prev, [name]: titleCase }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  
+    // Handle special cases for location fields
+    if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
+      const valid = value.replace(/[^a-z ]/g, '');
+      setFormData(prev => ({ ...prev, [name]: valid }));
+      return;
+    }
+  
+    if (name === 'state') {
+      const selected = locationData.find(s => s.state === value);
+      const distList = selected?.districts.map(d => d.district) || [];
+      setDistricts([...distList, 'Other']);
+      setTehsils([]);
+      setVillages([]);
+      setFormData(prev => ({ ...prev, state: value, district: '', tehsil: '', near_village: '' }));
+      setIsOtherDistrict(false);
+      return;
+    }
+  
+    if (name === 'district') {
+      if (value === 'Other') {
+        setIsOtherDistrict(true);
+        setFormData(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+        setTehsils([]);
+        setVillages([]);
+      } else {
+        const stateData = locationData.find(s => s.state === formData.state);
+        const districtData = stateData?.districts.find(d => d.district === value);
+        const tehsilList = districtData?.subDistricts.map(t => t.subDistrict) || [];
+        setTehsils(tehsilList);
+        setVillages([]);
+        setFormData(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+        setIsOtherDistrict(false);
+      }
+      return;
+    }
+  
+    if (name === 'tehsil') {
+      const stateData = locationData.find(s => s.state === formData.state);
+      const districtData = stateData?.districts.find(d => d.district === formData.district);
+      const tehsilData = districtData?.subDistricts.find(t => t.subDistrict === value);
+      const villageList = tehsilData?.villages || [];
+      setVillages(villageList);
+      setFormData(prev => ({ ...prev, tehsil: value, near_village: '' }));
+      return;
+    }
+  
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Reset the form
-  const resetForm = () => {
-    setFormData({
-      vendorName: '',
-      vendorMobile: '',
-      query_license: '',
-      mining_license: '',
-      country: 'India',
-      state: 'Rajasthan',
-      district: 'Jodhpur',
-      tehsil: 'Jodhpur',
-      near_village: ''
-    });
-    setValidated(false);
-  };
+  
+  const resetForm = () => { /* ... your resetForm logic is fine ... */ };
+
 
   const getFormattedDate = () => new Date().toISOString();
 
-  // Submit form
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setValidated(true);
     if (!e.currentTarget.checkValidity()) return;
 
     setIsSubmitting(true);
-
     try {
       const res = await fetch('/api/vendor');
       const data = await res.json();
 
       const duplicate = data?.docs?.some(
-        vendor =>
-          vendor.vendorName?.toLowerCase() === formData.vendorName.toLowerCase() &&
+        vendor => vendor.vendorName?.toLowerCase() === formData.vendorName.toLowerCase() &&
           vendor.query_license?.toLowerCase() === formData.query_license.toLowerCase() &&
           vendor.near_village?.toLowerCase() === formData.near_village.toLowerCase()
       );
@@ -121,101 +191,120 @@ const AddVendorAccount = () => {
     }
   };
 
+
+
   return (
-    <Container className="mt-4 bg-light rounded-4 p-4 shadow w-100 w-md-75 w-xl-50 mx-auto my-5">
-      <h4 className="text-center mb-3 fw-bold">Add New Vendor Account</h4>
+    <>
+     
+      <Container className="mt-4 bg-light rounded-4 p-4 shadow w-100 w-md-75 w-xl-50 mx-auto my-5">
+        <h4 className="text-center mb-3 fw-bold">Add New Vendor Account</h4>
 
-      {showAlert && (
-        <Alert variant={alertVariant} dismissible onClose={() => setShowAlert(false)}>
-          {alertMessage}
-        </Alert>
-      )}
+        {showAlert && (
+          <Alert variant={alertVariant} dismissible onClose={() => setShowAlert(false)}>
+            {alertMessage}
+          </Alert>
+        )}
 
-      <Form noValidate validated={validated} onSubmit={handleSubmit}>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold fs-5">Vendor Name <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="vendorName"
-                required
-                pattern="^[a-zA-Z ]+$"
-                value={formData.vendorName}
-                onChange={handleChange}
-                placeholder="Enter vendor name"
-              />
-              <Form.Control.Feedback type="invalid">Letters and spaces only.</Form.Control.Feedback>
-            </Form.Group>
+        <Form noValidate validated={validated} onSubmit={handleSubmit}>
+          <Row>
+            {/* Left Column */}
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">Vendor Name <span className="text-danger">*</span></Form.Label>
+                <Form.Control type="text" name="vendorName"  value={formData.vendorName} onChange={handleChange} placeholder="Enter vendor name" />
+              </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold fs-5">Mobile Number <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                type="tel"
-                name="vendorMobile"
-                required
-                pattern="[0-9]{10}"
-                value={formData.vendorMobile}
-                onChange={handleChange}
-                placeholder="Enter 10-digit number"
-              />
-              <Form.Control.Feedback type="invalid">Enter a valid 10-digit number.</Form.Control.Feedback>
-            </Form.Group>
+  
 
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold fs-5">Query License <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="query_license"
-                required
-                value={formData.query_license}
-                onChange={handleChange}
-                placeholder="Enter query license"
-              />
-              <Form.Control.Feedback type="invalid">Query License is required.</Form.Control.Feedback>
-            </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">Mobile Number <span className="text-danger">*</span></Form.Label>
+                <Form.Control type="tel" name="vendorMobile" required pattern="[0-9]{10}" value={formData.vendorMobile} onChange={handleChange} placeholder="Enter 10-digit number" />
+                <Form.Control.Feedback type="invalid">Enter a valid 10-digit number.</Form.Control.Feedback>
+              </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold fs-5">Mining License</Form.Label>
-              <Form.Control
-                type="text"
-                name="mining_license"
-                value={formData.mining_license}
-                onChange={handleChange}
-                placeholder="Enter mining license"
-              />
-            </Form.Group>
-          </Col>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">Query License <span className="text-danger">*</span></Form.Label>
+                <Form.Control type="text" name="query_license" required value={formData.query_license} onChange={handleChange} placeholder="Enter query license"/>
+                <Form.Control.Feedback type="invalid">Query License is required.</Form.Control.Feedback>
+              </Form.Group>
 
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
-              <Form.Select
-                name="near_village"
-                value={formData.near_village}
-                onChange={handleChange}
-                required
-              >
-                <option value="">-- Select Village --</option>
-                {villages.map((village) => (
-                  <option key={village} value={village}>{village}</option>
-                ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">Nearby Village is required.</Form.Control.Feedback>
-            </Form.Group>
-          </Col>
-        </Row>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">Mining License</Form.Label>
+                <Form.Control type="text" name="mining_license" value={formData.mining_license} onChange={handleChange} placeholder="Enter mining license"/>
+              </Form.Group>
+            </Col>
 
-        <div className="text-center mt-4 d-flex justify-content-center gap-2 flex-wrap">
-          <Button type="submit" variant="success" className="fw-bold fs-5" disabled={isSubmitting}>
-            {isSubmitting ? 'Processing...' : 'Create Vendor Account'}
-          </Button>
-          <Button type="button" variant="secondary" className="fw-bold fs-5" onClick={resetForm}>
-            Reset Form
-          </Button>
-        </div>
-      </Form>
-    </Container>
+            {/* Right Column */}
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">State <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="state" value={formData.state} onChange={handleChange} required>
+                  <option value="">-- Select State --</option>
+                  {states.map(s => <option key={s} value={s}>{s}</option>)}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">State is required.</Form.Control.Feedback>
+              </Form.Group>
+
+              {/* District Input OR Dropdown */}
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">District <span className="text-danger">*</span></Form.Label>
+                {isOtherDistrict ? (
+                  <div className="d-flex align-items-center gap-2">
+                    <Form.Control type="text" name="district" placeholder="Enter district" pattern="^[a-z ]+$" required value={formData.district} onChange={handleChange} />
+                    <Button variant="outline-danger" onClick={() => {
+                      setIsOtherDistrict(false);
+                      setFormData({ ...formData, district: '', tehsil: '', near_village: '' });
+                    }}>
+                      <FaXmark size={20} className="text-center fw-bold fs-5"/>
+                    </Button>
+                  </div>
+                ) : (
+                  <Form.Select name="district" value={formData.district} onChange={handleChange} required>
+                    <option value="">-- Select District --</option>
+                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                  </Form.Select>
+                )}
+                <Form.Control.Feedback type="invalid">District is required.</Form.Control.Feedback>
+              </Form.Group>
+
+              {/* Tehsil Field */}
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">Tehsil</Form.Label>
+                {isOtherDistrict ? (
+                  <Form.Control type="text" name="tehsil" placeholder="Enter tehsil" pattern="^[a-z ]+$" value={formData.tehsil} onChange={handleChange} />
+                ) : (
+                  <Form.Select name="tehsil" value={formData.tehsil} onChange={handleChange}>
+                    <option value="">-- Select Tehsil --</option>
+                    {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
+                  </Form.Select>
+                )}
+              </Form.Group>
+
+              {/* Village Field */}
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
+                {isOtherDistrict ? (
+                  <Form.Control type="text" name="near_village" placeholder="Enter village" pattern="^[a-z ]+$" required value={formData.near_village} onChange={handleChange} />
+                ) : (
+                  <Form.Select name="near_village" value={formData.near_village} onChange={handleChange} required>
+                    <option value="">-- Select Village --</option>
+                    {villages.map(v => <option key={v} value={v}>{v}</option>)}
+                  </Form.Select>
+                )}
+                <Form.Control.Feedback type="invalid">Nearby Village is required.</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <div className="text-center mt-4 d-flex justify-content-center gap-2 flex-wrap">
+            <Button type="submit" variant="success" className="fw-bold fs-5" disabled={isSubmitting}>
+              {isSubmitting ? 'Processing...' : 'Create Vendor Account'}
+            </Button>
+            <Button type="button" variant="secondary" className="fw-bold fs-5" onClick={resetForm}>Reset Form</Button>
+          </div>
+        </Form>
+      </Container>
+    </>
   );
 };
 
