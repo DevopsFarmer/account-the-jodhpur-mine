@@ -65,7 +65,8 @@ const EditVendorTransaction = () => {
   // Working stages for the vendor side (matching VendorTransactions schema)
   const [workingStagesVendor, setWorkingStagesVendor] = useState([{
     workingStagevendor: "",
-    workingDescriptionvendor: ""
+    workingDescriptionvendor: "",
+    stageDate: ""
   }]);
 
   // State for read-only creation and update dates
@@ -140,9 +141,10 @@ const EditVendorTransaction = () => {
             setWorkingStagesVendor(data.workingStagevendor?.length > 0 ?
               data.workingStagevendor.map(s => ({
                 workingStagevendor: s.workingStagevendor || '',
-                workingDescriptionvendor: s.workingDescriptionvendor || ''
+                workingDescriptionvendor: s.workingDescriptionvendor || '',
+                stageDate: s.stageDate || ''
               })) :
-              [{ workingStagevendor: "", workingDescriptionvendor: "" }]
+              [{ workingStagevendor: "", workingDescriptionvendor: "", stageDate: "" }]
             );
 
             setVendorCreatedAt(data.vendorCreatedAt); //
@@ -208,7 +210,8 @@ const EditVendorTransaction = () => {
   const addStageVendor = () => {
     setWorkingStagesVendor([...workingStagesVendor, {
       workingStagevendor: "",
-      workingDescriptionvendor: ""
+      workingDescriptionvendor: "",
+      stageDate: ""
     }]);
   };
 
@@ -263,6 +266,7 @@ const EditVendorTransaction = () => {
       workingStagevendor: workingStagesVendor.map((s) => ({
         workingStagevendor: s.workingStagevendor, 
         workingDescriptionvendor: s.workingDescriptionvendor, 
+        stageDate: s.stageDate
       })),
       description: form.description, 
     };
@@ -461,6 +465,14 @@ const EditVendorTransaction = () => {
                   placeholder="Work Details/Amount"
                   value={stage.workingDescriptionvendor}
                   onChange={(e) => updateStageVendor(index, 'workingDescriptionvendor', e.target.value)}
+                />
+              </Col>
+              <Col sm={3} className="pb-3 pb-md-0">
+                <Form.Control
+                  type="date"
+                  placeholder="Stage Date"
+                  value={stage.stageDate}
+                  onChange={(e) => updateStageVendor(index, 'stageDate', e.target.value)}
                 />
               </Col>
               <Col sm={3} className="pb-3 pb-md-0">

@@ -662,7 +662,7 @@ const AddVendorTransaction = () => {
                         type="date"
                         placeholder="Stage Date"
                         value={stage.stageDate}
-                        onChange={(e) => updateStageClient(index, 'stageDate', e.target.value)}
+                        onChange={(e) => updateStageVendor(index, 'stageDate', e.target.value)}
                         className="p-2"
                         required
                       />
