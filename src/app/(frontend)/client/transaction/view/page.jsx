@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card, } from "react-bootstrap";
-import { useRouter } from "next/navigation";
+
 import axios from "axios";
 import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle, } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
+import { useRouter } from "next/navigation";
 
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-GB", {
@@ -37,12 +38,43 @@ const ViewClientTransaction = () => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(""); 
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   const [paymentStatusLoadingId, setPaymentStatusLoadingId] = useState(null);
   const [workStatusLoadingId, setWorkStatusLoadingId] = useState(null); 
 
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1); 
+
+  // Function to load jsPDF dynamically
+  const loadJsPDF = async () => {
+    return new Promise((resolve, reject) => {
+      if (typeof window !== "undefined" && window.jspdf) {
+        resolve(window.jspdf);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      script.onload = () => window.jspdf ? resolve(window.jspdf) : reject(new Error('jsPDF failed to load'));
+      script.onerror = () => reject(new Error('Failed to load jsPDF script'));
+      document.head.appendChild(script);
+    });
+  };
+
+  // Function to load jsPDF AutoTable plugin
+  const loadAutoTable = async () => {
+    return new Promise((resolve, reject) => {
+      if (typeof window !== "undefined" && window.jspdf?.jsPDF?.API?.autoTable) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load AutoTable plugin'));
+      document.head.appendChild(script);
+    });
+  };
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -74,35 +106,16 @@ const ViewClientTransaction = () => {
         setIsLoading(true);
         setError("");
         try {
-          console.log("Fetching transactions...");
           const res = await axios.get("/api/client-transaction?limit=100000");
-          console.log("Raw API response:", res.data);
-          
           if (!res.data || !Array.isArray(res.data.docs)) {
             throw new Error("Invalid response format from server");
           }
-          
-          const managerTransactions = res.data.docs.filter(tx => {
-            console.log("Transaction source:", tx.source, "Transaction ID:", tx.id);
-            return tx.source === 'manager';
-          });
-          
-          console.log("Manager transactions:", managerTransactions);
-          
-          if (managerTransactions.length === 0) {
-            console.warn("No manager transactions found. Total transactions:", res.data.docs.length);
-          }
-          
+          const managerTransactions = res.data.docs.filter(tx => tx.source === 'manager');
           setAllTransactions(managerTransactions);
           setFilteredTransactions(managerTransactions);
         } catch (err) {
           console.error("API Error:", err);
-          console.error("Error details:", {
-            message: err.message,
-            response: err.response?.data,
-            status: err.response?.status
-          });
-          setError(`Failed to load transactions: ${err.message}. Please check the console for more details.`);
+          setError(`Failed to load transactions: ${err.message}.`);
         } finally {
           setIsLoading(false);
         }
@@ -124,11 +137,9 @@ const ViewClientTransaction = () => {
     const results = allTransactions.filter((transaction) => {
       const clientName = transaction.clientName?.clientName?.toLowerCase() || "";
       const transactionDate = new Date(transaction.clientCreatedAt);
-
       const matchesName = clientName.includes(searchTerm);
       const afterStartDate = !startDateObj || transactionDate >= startDateObj;
       const beforeEndDate = !endDateObj || transactionDate <= endDateObj;
-
       return matchesName && afterStartDate && beforeEndDate;
     });
 
@@ -154,87 +165,161 @@ const ViewClientTransaction = () => {
     applyFilters(searchName, startDate, value);
   };
 
-  const downloadPDF = async () => {
-    if (typeof window === "undefined" || !selectedTransaction) return;
+  // Replace your existing downloadPDF function with this complete, corrected version.
 
-    try {
-      const html2pdf = (await import("html2pdf.js")).default;
+const downloadPDF = async () => {
+  if (typeof window === "undefined" || !selectedTransaction) return;
 
-      const element = document.getElementById("pdf-content");
-      if (!element) return;
+  setIsPdfLoading(true);
+  try {
+    // Load the PDF generation libraries
+    await loadJsPDF();
+    await loadAutoTable();
 
-      const pdfContentWrapper = document.createElement("div");
-      pdfContentWrapper.innerHTML = element.innerHTML;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
 
-      pdfContentWrapper.style.padding = "20px";
-      pdfContentWrapper.style.fontFamily = "Arial, sans-serif";
-      pdfContentWrapper.style.fontSize = "12px";
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 40;
+    let startY = 0;
 
-      const tables = pdfContentWrapper.querySelectorAll("table");
-      tables.forEach((table) => {
-        table.style.width = "100%";
-        table.style.borderCollapse = "collapse";
-      });
-      const cells = pdfContentWrapper.querySelectorAll("th, td");
-      cells.forEach((cell) => {
-        cell.style.padding = "8px";
-        cell.style.border = "1px solid #ddd";
-      });
+    // ===== 1. Document Header =====
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("Client Transaction Report", pageWidth / 2, startY + 50, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`For: ${selectedTransaction.clientName?.clientName || "N/A"}`, pageWidth / 2, startY + 68, { align: "center" });
+    doc.setDrawColor(200);
+    doc.line(margin, startY + 85, pageWidth - margin, startY + 85);
+    startY = 100;
 
-      const opt = {
-        margin: 0.5,
-        filename: `Client_Transaction_${
-          selectedTransaction.clientName?.clientName || "Details"
-        }.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: true,
-          scrollY: 0,
-          windowWidth: pdfContentWrapper.scrollWidth,
-          windowHeight: pdfContentWrapper.scrollHeight,
+    // ===== 2. Client & Transaction Info (Two-column Layout) =====
+    doc.autoTable({
+      body: [
+        [{ content: "Query License:", styles: { fontStyle: 'bold' } }, selectedTransaction.query_license?.query_license || "N/A"],
+        [{ content: "Nearby Village:", styles: { fontStyle: 'bold' } }, selectedTransaction.near_village?.near_village || "N/A"],
+        [{ content: "Payment Status:", styles: { fontStyle: 'bold' } }, selectedTransaction.paymentstatus?.charAt(0).toUpperCase() + selectedTransaction.paymentstatus?.slice(1) || "N/A"],
+      ],
+      startY: startY, theme: 'plain', styles: { fontSize: 10, cellPadding: 3 }, tableWidth: (pageWidth / 2) - margin, margin: { left: margin },
+    });
+    doc.autoTable({
+      body: [
+        [{ content: "Created At:", styles: { fontStyle: 'bold' } }, `${formatDate(selectedTransaction.clientCreatedAt)}`],
+        [{ content: "Last Updated At:", styles: { fontStyle: 'bold' } }, `${formatDate(selectedTransaction.clientUpdatedAt)}`],
+        [{ content: "Transaction Desc:", styles: { fontStyle: 'bold' } }, selectedTransaction.description || "N/A"],
+      ],
+      startY: startY, theme: 'plain', styles: { fontSize: 10, cellPadding: 3 }, tableWidth: (pageWidth / 2) - margin, margin: { left: pageWidth / 2 },
+    });
+    startY = doc.autoTable.previous.finalY + 20;
+
+    // ===== 3. Financial Summary =====
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Financial Summary", margin, startY);
+    startY += 15;
+    doc.autoTable({
+      head: [['Total Amount', 'Received Amount', 'Remaining Amount']],
+      body: [[`₹ ${selectedTransaction.totalAmount?.toFixed(2) || '0.00'}`, `₹ ${selectedTransaction.totalAmountclient?.toFixed(2) || '0.00'}`, `₹ ${(selectedTransaction.remainingAmount || (selectedTransaction.totalAmount - selectedTransaction.totalAmountclient)).toFixed(2)}`]],
+      startY: startY, theme: 'grid',
+      headStyles: { fontStyle: 'bold', halign: 'center', fillColor: [230, 230, 230], textColor: 0 },
+      bodyStyles: { fontSize: 11, halign: 'center' },
+    });
+    startY = doc.autoTable.previous.finalY + 30;
+
+    // ===== 4. Work Progress Stages Table =====
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("Work Progress Stages", margin, startY);
+    startY += 20;
+
+    const tableColumns = [
+        { header: "#", dataKey: "sn" }, { header: "Company Stage", dataKey: "cStage" }, { header: "Company Desc.", dataKey: "cDesc" },
+        { header: "Status", dataKey: "status" }, { header: "Client Stage", dataKey: "clStage" }, { header: "Client Desc.", dataKey: "clDesc" }, { header: "Date", dataKey: "date" },
+    ];
+    const tableRows = Array.from({ length: Math.max(selectedTransaction.workingStage?.length || 0, selectedTransaction.workingStageclient?.length || 0) })
+        .map((_, index) => ({
+            sn: index + 1,
+            cStage: selectedTransaction.workingStage?.[index]?.workingStage || "N/A",
+            cDesc: selectedTransaction.workingStage?.[index]?.workingDescription || "N/A",
+            status: selectedTransaction.workingStage?.[index]?.workstatus || "incomplete",
+            clStage: selectedTransaction.workingStageclient?.[index]?.workingStageclient || "N/A",
+            clDesc: selectedTransaction.workingStageclient?.[index]?.workingDescriptionclient || "N/A",
+            date: selectedTransaction.workingStageclient?.[index]?.stageDate ? formatDate(selectedTransaction.workingStageclient[index].stageDate) : "No date",
+        }));
+
+    doc.autoTable({
+        columns: tableColumns,
+        body: tableRows,
+        startY: startY,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold', fontSize: 9, halign: 'center' },
+        bodyStyles: { fontSize: 9, cellPadding: 4, valign: 'middle' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        // THIS IS THE CRITICAL FIX: Define widths for most columns,
+        // letting the 'description' columns wrap text in the remaining space.
+        columnStyles: {
+            sn: { cellWidth: 25, halign: 'center' },
+            cStage: { cellWidth: 70 },
+            clStage: { cellWidth: 70 },
+            status: { cellWidth: 60, halign: 'center' },
+            date: { cellWidth: 60, halign: 'center' },
+            // cDesc and clDesc will automatically take up the remaining space and wrap text
         },
-        jsPDF: {
-          unit: "in",
-          format: "a4",
-          orientation: "portrait",
+        didDrawCell: (data) => {
+            // Add colored backgrounds to the status cell
+            if (data.column.dataKey === 'status' && data.cell.section === 'body') {
+                const text = data.cell.text[0]?.toLowerCase();
+                let fillColor;
+                if (text === 'complete') {
+                    fillColor = [211, 255, 211]; // Light green
+                } else if (text === 'incomplete') {
+                    fillColor = [255, 211, 211]; // Light red
+                }
+                
+                if (fillColor) {
+                    doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                    doc.setTextColor(0); // Reset text color to black for readability
+                    doc.text(data.cell.text, data.cell.x + data.cell.padding('left'), data.cell.y + data.cell.height / 2, {
+                        baseline: 'middle'
+                    });
+                }
+            }
         },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-      };
+        didDrawPage: (data) => {
+            // Add a footer to each page
+            doc.setFontSize(10);
+            doc.setTextColor(150);
+            doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 20, { align: 'center' });
+        }
+    });
 
-      await html2pdf().set(opt).from(pdfContentWrapper).save();
-    } catch (error) {
+    // Save the PDF
+    doc.save(`Transaction_${selectedTransaction.clientName?.clientName || "Details"}_${new Date().toISOString().slice(0,10)}.pdf`);
+
+  } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Error generating PDF. Please try again.");
-    }
-  };
+      setError("Failed to generate PDF. Please check the console.");
+  } finally {
+      setIsPdfLoading(false);
+  }
+};
 
   const togglePaymentStatus = async (id) => {
     setPaymentStatusLoadingId(id); 
     try {
       const transactionToUpdate = allTransactions.find((txn) => txn.id === id);
       if (!transactionToUpdate) return;
-
-      const newStatus =
-        transactionToUpdate.paymentstatus === "pending" ? "Received" : "pending";
-
+      const newStatus = transactionToUpdate.paymentstatus === "pending" ? "Received" : "pending";
       await fetch(`/api/client-transaction/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentstatus: newStatus }),
       });
-
-      const updatedAllTransactions = allTransactions.map((txn) =>
-        txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
-      );
-      const updatedFilteredTransactions = filteredTransactions.map((txn) =>
-        txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
-      );
-
-      setAllTransactions(updatedAllTransactions);
-      setFilteredTransactions(updatedFilteredTransactions);
-
+      const updateTxns = (txns) => txns.map((txn) => txn.id === id ? { ...txn, paymentstatus: newStatus } : txn);
+      setAllTransactions(updateTxns(allTransactions));
+      setFilteredTransactions(updateTxns(filteredTransactions));
       if (selectedTransaction && selectedTransaction.id === id) {
         setSelectedTransaction({ ...selectedTransaction, paymentstatus: newStatus });
       }
@@ -249,36 +334,19 @@ const ViewClientTransaction = () => {
   const toggleWorkStatus = async (transactionId, stageIndex) => {
     setWorkStatusLoadingId({ transactionId, stageIndex }); 
     try {
-      const transactionToUpdate = allTransactions.find(
-        (txn) => txn.id === transactionId
-      );
+      const transactionToUpdate = allTransactions.find((txn) => txn.id === transactionId);
       if (!transactionToUpdate || !transactionToUpdate.workingStage) return;
       const updatedWorkingStage = [...transactionToUpdate.workingStage];
-
       const currentStatus = updatedWorkingStage[stageIndex]?.workstatus || "incomplete";
       const newStatus = currentStatus === "incomplete" ? "complete" : "incomplete";
-
-      updatedWorkingStage[stageIndex] = {
-        ...updatedWorkingStage[stageIndex],
-        workstatus: newStatus,
-      };
-
+      updatedWorkingStage[stageIndex] = { ...updatedWorkingStage[stageIndex], workstatus: newStatus };
       await fetch(`/api/client-transaction/${transactionId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workingStage: updatedWorkingStage }),
       });
-
-      const updatedAllTransactions = allTransactions.map((txn) =>
-        txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
-      );
-      const updatedFilteredTransactions = filteredTransactions.map((txn) =>
-        txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
-      );
-
-      setAllTransactions(updatedAllTransactions);
-      setFilteredTransactions(updatedFilteredTransactions);
-
+      const updateTxns = (txns) => txns.map((txn) => txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn);
+      setAllTransactions(updateTxns(allTransactions));
+      setFilteredTransactions(updateTxns(filteredTransactions));
       if (selectedTransaction && selectedTransaction.id === transactionId) {
         setSelectedTransaction({ ...selectedTransaction, workingStage: updatedWorkingStage });
       }
@@ -295,65 +363,36 @@ const ViewClientTransaction = () => {
   const currentTransactions = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
 
-  // Render pagination buttons
   const renderPagination = () => {
     const pages = [];
-
     if (currentPage > 1) {
-      pages.push(
-        <Button key="prev" onClick={() => setCurrentPage(currentPage - 1)}>
-          <FaAngleLeft /> Prev
-        </Button>
-      );
+      pages.push(<Button key="prev" onClick={() => setCurrentPage(currentPage - 1)}><FaAngleLeft /> Prev</Button>);
     }
-
     for (let i = 1; i <= totalPages; i++) {
       if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-        pages.push(
-          <Button
-            key={i}
-            variant={i === currentPage ? "dark" : "outline-primary"}
-            onClick={() => setCurrentPage(i)}
-          >
-            {i}
-          </Button>
-        );
-      } else if (
-        (i === currentPage - 2 && currentPage > 3) ||
-        (i === currentPage + 2 && currentPage < totalPages - 2)
-      ) {
+        pages.push(<Button key={i} variant={i === currentPage ? "dark" : "outline-primary"} onClick={() => setCurrentPage(i)}>{i}</Button>);
+      } else if ((i === currentPage - 2 && currentPage > 3) || (i === currentPage + 2 && currentPage < totalPages - 2)) {
         pages.push(<span key={`ellipsis-${i}`} className="mx-2">...</span>);
       }
     }
-
     if (currentPage < totalPages) {
-      pages.push(
-        <Button key="next" onClick={() => setCurrentPage(currentPage + 1)}>
-          Next <FaAngleRight />
-        </Button>
-      );
+      pages.push(<Button key="next" onClick={() => setCurrentPage(currentPage + 1)}>Next <FaAngleRight /></Button>);
     }
-
     return <div className="d-flex flex-wrap gap-2 justify-content-center my-3">{pages}</div>;
   };
 
-  // Show spinner while initial loading or unauthorized
   if (isLoading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" />
-        <span className="ms-2">Loading Please Wait...</span>
+        <Spinner animation="border" /><span className="ms-2">Loading Please Wait...</span>
       </div>
     );
   }
 
-  // Display unauthorized message if not admin or manager
   if (userRole !== "admin" && userRole !== "manager") {
     return (
       <Container className="text-center mt-5">
-        <Alert variant="danger">
-          <FaClipboard className="me-2" /> {error}
-        </Alert>
+        <Alert variant="danger"><FaClipboard className="me-2" /> {error}</Alert>
       </Container>
     );
   }
@@ -361,66 +400,34 @@ const ViewClientTransaction = () => {
   return (
     <>
       <Container className="mt-4 mb-5">
-        <h4 className="text-center mb-4">
-          <FaClipboard /> View All Client Transactions
-        </h4>
-
-        {/* Show error using Alert */}
-        {error && (
-          <Alert variant="danger" className="text-center fw-semibold">
-            {error}
-          </Alert>
-        )}
-
-        {/* Search & Date Filter */}
+        <h4 className="text-center mb-4"><FaClipboard /> View All Client Transactions</h4>
+        {error && <Alert variant="danger" className="text-center fw-semibold">{error}</Alert>}
         <Form className="mb-4">
           <Row className="gy-3">
             <Col xs={12} md={4}>
               <Form.Label>Client Name</Form.Label>
               <InputGroup>
-                <Form.Control
-                  type="text"
-                  value={searchName}
-                  onChange={handleSearch}
-                  placeholder="Search by client name..."
-                />
-                <InputGroup.Text>
-                  <FaSearch />
-                </InputGroup.Text>
+                <Form.Control type="text" value={searchName} onChange={handleSearch} placeholder="Search by client name..." />
+                <InputGroup.Text><FaSearch /></InputGroup.Text>
               </InputGroup>
             </Col>
             <Col xs={6} md={4}>
               <Form.Label>Start Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={startDate}
-                onChange={handleStartDateChange}
-              />
+              <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
             </Col>
             <Col xs={6} md={4}>
               <Form.Label>End Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={endDate}
-                onChange={handleEndDateChange}
-              />
+              <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
             </Col>
           </Row>
         </Form>
-
-        {/* Responsive Table */}
         <div className="table-responsive">
           <Table className="table-bordered table-hover text-center align-middle">
             <thead className="table-dark">
               <tr>
-                <th>S.No</th>
-                <th>Client Name</th>
-                <th>Created At</th>
-                <th>Total Amount(<FaRupeeSign />)</th>
-                <th>Received Amount(<FaRupeeSign />)</th>
-                <th>Remaining Amount(<FaRupeeSign />)</th>
-                <th>Payment Status</th>
-                <th>Actions</th>
+                <th>S.No</th><th>Client Name</th><th>Created At</th><th>Total Amount(<FaRupeeSign />)</th>
+                <th>Received Amount(<FaRupeeSign />)</th><th>Remaining Amount(<FaRupeeSign />)</th>
+                <th>Payment Status</th><th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -429,308 +436,94 @@ const ViewClientTransaction = () => {
                   <tr key={txn.id}>
                     <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td>{txn.clientName?.clientName || "N/A"}</td>
+                    <td>{formatDate(txn.clientCreatedAt)}<br /><small><span className="fw-semibold">{formatTime(txn.clientCreatedAt)}</span></small></td>
+                    <td><FaRupeeSign />{txn.totalAmount?.toFixed(2)}</td>
+                    <td><FaRupeeSign />{txn.totalAmountclient?.toFixed(2)}</td>
+                    <td><FaRupeeSign />{(txn.remainingAmount || (txn.totalAmount - txn.totalAmountclient)).toFixed(2)}</td>
                     <td>
-                      {formatDate(txn.clientCreatedAt)}
-                      <br />
-                      <small>
-                        <span className="fw-semibold">
-                          {formatTime(txn.clientCreatedAt)}
-                        </span>
-                      </small>
-                    </td>
-                    <td>
-                      <FaRupeeSign />
-                      {txn.totalAmount?.toFixed(2)}
-                    </td>
-                    <td>
-                      <FaRupeeSign />
-                      {txn.totalAmountclient?.toFixed(2)}
-                    </td>
-                    <td>
-                      <FaRupeeSign />
-                      {(
-                        txn.remainingAmount ||
-                        (txn.totalAmount - txn.totalAmountclient)
-                      ).toFixed(2)}
-                    </td>
-                    <td>
-                      <Button
-                        variant={txn.paymentstatus === "pending" ? "danger" : "success"}
-                        onClick={() => togglePaymentStatus(txn.id)}
-                        className="rounded-pill text-capitalize fw-bold fs-6"
-                        disabled={paymentStatusLoadingId === txn.id} // Disable button while loading
-                      >
-                        {paymentStatusLoadingId === txn.id ? (
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                            className="me-1"
-                          />
-                        ) : (
-                          txn.paymentstatus
-                        )}
+                      <Button variant={txn.paymentstatus === "pending" ? "danger" : "success"} onClick={() => togglePaymentStatus(txn.id)}
+                        className="rounded-pill text-capitalize fw-bold fs-6" disabled={paymentStatusLoadingId === txn.id}>
+                        {paymentStatusLoadingId === txn.id ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" /> : txn.paymentstatus}
                       </Button>
                     </td>
                     <td>
                       <div className="d-flex flex-wrap justify-content-center gap-2">
-                        <Button
-                          variant="info"
-                          onClick={() => {
-                            setSelectedTransaction(txn);
-                            setShowModal(true);
-                          }}
-                        >
-                          <FaEye />
-                        </Button>
-                        <Button
-                          variant="warning"
-                          onClick={() => router.push(`/client/transaction/edit/${txn.id}`)}
-                        >
-                          <PencilSquare />
-                        </Button>
+                        <Button variant="info" onClick={() => { setSelectedTransaction(txn); setShowModal(true); }}><FaEye /></Button>
+                        <Button variant="warning" onClick={() => router.push(`/client/transaction/edit/${txn.id}`)}><PencilSquare /></Button>
                       </div>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan={8} className="fw-semibold text-secondary">
-                    No client transactions found.
-                  </td>
-                </tr>
+                <tr><td colSpan={8} className="fw-semibold text-secondary">No client transactions found.</td></tr>
               )}
             </tbody>
           </Table>
         </div>
-
-        {/* Pagination */}
         {renderPagination()}
-
-        {/* Transaction Details Modal */}
         <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered scrollable>
           <Modal.Header closeButton className="bg-light border-bottom">
             <Modal.Title className="d-flex align-items-center gap-2">
-              <FaClipboard className="text-primary" />
-              <span className="fs-5">Client Transaction Details</span>
-              <Button
-                variant="outline-warning"
-                size="sm"
-                className="ms-auto rounded-pill fw-bold fs-6 text-center justify-content-center align-items-center d-flex gap-1 text-dark"
-                onClick={downloadPDF}
-                title="Download as PDF"
-              >
-                <FaFilePdf className="me-1" />
-                PDF
+              <FaClipboard className="text-primary" /><span className="fs-5">Client Transaction Details</span>
+              <Button variant="outline-warning" size="sm" className="ms-auto rounded-pill fw-bold fs-6 text-center justify-content-center align-items-center d-flex gap-1 text-dark"
+                onClick={downloadPDF} disabled={isPdfLoading} title="Download as PDF">
+                {isPdfLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" /> : <FaFilePdf className="me-1" />}PDF
               </Button>
             </Modal.Title>
           </Modal.Header>
-
           <Modal.Body id="pdf-content" className="px-3 py-2">
             {selectedTransaction && (
               <div>
-                {/* Client Info */}
                 <Row className="g-3 mb-3">
                   <Col xs={12} sm={6}>
-                    <p>
-                      <FaUser className="me-2 text-secondary" />
-                      <strong>Client Name:</strong>{" "}
-                      {selectedTransaction.clientName?.clientName || "N/A"}
-                    </p>
-                    <p>
-                      <FaWrench className="me-2 text-secondary" />
-                      <strong>Query License:</strong>{" "}
-                      {selectedTransaction.query_license?.query_license || "N/A"}
-                    </p>
-                    <p>
-                      <FaMapMarkerAlt className="me-2 text-secondary" />
-                      <strong>Nearby Village:</strong>{" "}
-                      {selectedTransaction.near_village?.near_village || "N/A"}
-                    </p>
+                    <p><FaUser className="me-2 text-secondary" /><strong>Client Name:</strong> {selectedTransaction.clientName?.clientName || "N/A"}</p>
+                    <p><FaWrench className="me-2 text-secondary" /><strong>Query License:</strong> {selectedTransaction.query_license?.query_license || "N/A"}</p>
+                    <p><FaMapMarkerAlt className="me-2 text-secondary" /><strong>Nearby Village:</strong> {selectedTransaction.near_village?.near_village || "N/A"}</p>
                   </Col>
                   <Col xs={12} sm={6}>
-                    <p>
-                      <FaCalendarAlt className="me-2 text-secondary" />
-                      <strong>Created At:</strong>{" "}
-                      {formatDate(selectedTransaction.clientCreatedAt)}{" "}
-                      {formatTime(selectedTransaction.clientCreatedAt)}
-                    </p>
-                    <p>
-                      <FaCalendarAlt className="me-2 text-secondary" />
-                      <strong>Last Updated At:</strong>{" "}
-                      {formatDate(selectedTransaction.clientUpdatedAt)}{" "}
-                      {formatTime(selectedTransaction.clientUpdatedAt)}
-                    </p>
+                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Created At:</strong> {formatDate(selectedTransaction.clientCreatedAt)} {formatTime(selectedTransaction.clientCreatedAt)}</p>
+                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Last Updated At:</strong> {formatDate(selectedTransaction.clientUpdatedAt)} {formatTime(selectedTransaction.clientUpdatedAt)}</p>
                   </Col>
                 </Row>
-
-                {/* Amount Summary */}
                 <Row className="g-3 text-center mb-3">
-                  <Col xs={12} md={4}>
-                    <div className="bg-light rounded shadow-sm p-2">
-                      <p className="mb-1 fw-bold text-dark">Total Amount</p>
-                      <p className="text-success">
-                        <FaRupeeSign />{" "}
-                        {selectedTransaction.totalAmount?.toFixed(2)}
-                      </p>
-                    </div>
-                  </Col>
-                  <Col xs={12} md={4}>
-                    <div className="bg-light rounded shadow-sm p-2">
-                      <p className="mb-1 fw-bold text-dark">Received Amount</p>
-                      <p className="text-primary">
-                        <FaRupeeSign />{" "}
-                        {selectedTransaction.totalAmountclient?.toFixed(2)}
-                      </p>
-                    </div>
-                  </Col>
-                  <Col xs={12} md={4}>
-                    <div className="bg-light rounded shadow-sm p-2">
-                      <p className="mb-1 fw-bold text-dark">Remaining Amount</p>
-                      <p className="text-danger">
-                        <FaRupeeSign />{" "}
-                        {(
-                          selectedTransaction.remainingAmount ||
-                          (selectedTransaction.totalAmount -
-                            selectedTransaction.totalAmountclient)
-                        ).toFixed(2)}
-                      </p>
-                    </div>
-                  </Col>
+                  <Col xs={12} md={4}><div className="bg-light rounded shadow-sm p-2"><p className="mb-1 fw-bold text-dark">Total Amount</p><p className="text-success"><FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2)}</p></div></Col>
+                  <Col xs={12} md={4}><div className="bg-light rounded shadow-sm p-2"><p className="mb-1 fw-bold text-dark">Received Amount</p><p className="text-primary"><FaRupeeSign /> {selectedTransaction.totalAmountclient?.toFixed(2)}</p></div></Col>
+                  <Col xs={12} md={4}><div className="bg-light rounded shadow-sm p-2"><p className="mb-1 fw-bold text-dark">Remaining Amount</p><p className="text-danger"><FaRupeeSign /> {(selectedTransaction.remainingAmount || (selectedTransaction.totalAmount - selectedTransaction.totalAmountclient)).toFixed(2)}</p></div></Col>
                 </Row>
-
-                {/* Payment Status & Description */}
                 <Row className="mb-3">
                   <Col xs={12}>
-                    <p>
-                      <strong>Payment Status:</strong>{" "}
-                      <Button
-                        variant={
-                          selectedTransaction.paymentstatus === "pending"
-                            ? "danger"
-                            : "success"
-                        }
-                        onClick={() => togglePaymentStatus(selectedTransaction.id)}
-                        className="rounded-pill text-capitalize fw-bold fs-6 ms-2"
-                        size="sm"
-                        disabled={paymentStatusLoadingId === selectedTransaction.id}
-                      >
-                        {paymentStatusLoadingId === selectedTransaction.id ? (
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                            className="me-1"
-                          />
-                        ) : (
-                          selectedTransaction.paymentstatus
-                        )}
-                      </Button>
-                    </p>
-                    <p>
-                      <strong>Transaction Description:</strong>{" "}
-                      {selectedTransaction.description || "N/A"}
-                    </p>
+                    <p><strong>Payment Status:</strong> <Button variant={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"} onClick={() => togglePaymentStatus(selectedTransaction.id)}
+                      className="rounded-pill text-capitalize fw-bold fs-6 ms-2" size="sm" disabled={paymentStatusLoadingId === selectedTransaction.id}>
+                      {paymentStatusLoadingId === selectedTransaction.id ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" /> : selectedTransaction.paymentstatus}
+                    </Button></p>
+                    <p><strong>Transaction Description:</strong> {selectedTransaction.description || "N/A"}</p>
                   </Col>
                 </Row>
-
-                {/* Working Stage Table */}
                 <hr />
-                <h6 className="text-secondary mb-3">
-                  <FaWrench className="me-2" />
-                  Work Progress Stages
-                </h6>
+                <h6 className="text-secondary mb-3"><FaWrench className="me-2" />Work Progress Stages</h6>
                 <div className="table-responsive">
                   <Table bordered hover className="text-center align-middle">
                     <thead className="table-light">
-                      <tr>
-                        <th>S.No</th>
-                        <th>Company Stage</th>
-                        <th>Company Description</th>
-                        <th>Work Status</th>
-                        <th>Client Stage</th>
-                        <th>Client Description</th>
-                        <th>Stage Date</th>
-                      </tr>
+                      <tr><th>S.No</th><th>Company Stage</th><th>Company Description</th><th>Work Status</th><th>Client Stage</th><th>Client Description</th><th>Stage Date</th></tr>
                     </thead>
                     <tbody>
-                      {Array.from({
-                        length: Math.max(
-                          selectedTransaction.workingStage?.length || 0,
-                          selectedTransaction.workingStageclient?.length || 0
-                        ),
-                      }).map((_, index) => {
+                      {Array.from({ length: Math.max(selectedTransaction.workingStage?.length || 0, selectedTransaction.workingStageclient?.length || 0) }).map((_, index) => {
                         const companyStage = selectedTransaction.workingStage?.[index];
-                        const clientStage =
-                          selectedTransaction.workingStageclient?.[index];
+                        const clientStage = selectedTransaction.workingStageclient?.[index];
                         const workStatus = companyStage?.workstatus || "incomplete";
-                        const isStageLoading =
-                          workStatusLoadingId &&
-                          workStatusLoadingId.transactionId === selectedTransaction.id &&
-                          workStatusLoadingId.stageIndex === index;
-
+                        const isStageLoading = workStatusLoadingId && workStatusLoadingId.transactionId === selectedTransaction.id && workStatusLoadingId.stageIndex === index;
                         return (
                           <tr key={index}>
                             <td>{index + 1}</td>
                             <td>{companyStage?.workingStage || "N/A"}</td>
                             <td>{companyStage?.workingDescription || "N/A"}</td>
-                            <td>
-                              {companyStage ? (
-                                <Button
-                                  variant={workStatus === "incomplete" ? "danger" : "success"}
-                                  onClick={() =>
-                                    toggleWorkStatus(selectedTransaction.id, index)
-                                  }
-                                  className="rounded-pill text-capitalize fw-bold d-flex align-items-center justify-content-center mx-auto"
-                                  size="sm"
-                                  disabled={isStageLoading} // Disable button while loading
-                                  style={{ minWidth: '120px' }} // Ensure consistent button width
-                                >
-                                  {isStageLoading ? (
-                                    <Spinner
-                                      as="span"
-                                      animation="border"
-                                      size="sm"
-                                      role="status"
-                                      aria-hidden="true"
-                                      className="me-1"
-                                    />
-                                  ) : workStatus === "incomplete" ? (
-                                    <>
-                                      <FaTimesCircle className="me-1" />
-                                      Incomplete
-                                    </>
-                                  ) : (
-                                    <>
-                                      <FaCheckCircle className="me-1" />
-                                      Complete
-                                    </>
-                                  )}
-                                </Button>
-                              ) : (
-                                "N/A"
-                              )}
-                            </td>
+                            <td>{companyStage ? (<Button variant={workStatus === "incomplete" ? "danger" : "success"} onClick={() => toggleWorkStatus(selectedTransaction.id, index)}
+                              className="rounded-pill text-capitalize fw-bold d-flex align-items-center justify-content-center mx-auto" size="sm" disabled={isStageLoading} style={{ minWidth: '120px' }}>
+                              {isStageLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" /> : (workStatus === "incomplete" ? <><FaTimesCircle className="me-1" />Incomplete</> : <><FaCheckCircle className="me-1" />Complete</>)}
+                            </Button>) : ("N/A")}</td>
                             <td>{clientStage?.workingStageclient || "N/A"}</td>
                             <td>{clientStage?.workingDescriptionclient || "N/A"}</td>
-                            <td>
-                              {clientStage?.stageDate ? (
-                                <div>
-                                  <div className="fw-bold text-primary">
-                                    {formatDate(clientStage.stageDate)}
-                                  </div>
-                                  <small className="text-muted">
-                                    {formatTime(clientStage.stageDate)}
-                                  </small>
-                                </div>
-                              ) : (
-                                <span className="text-muted">No date</span>
-                              )}
-                            </td>
+                            <td>{clientStage?.stageDate ? (<div><div className="fw-bold text-primary">{formatDate(clientStage.stageDate)}</div><small className="text-muted">{formatTime(clientStage.stageDate)}</small></div>) : (<span className="text-muted">No date</span>)}</td>
                           </tr>
                         );
                       })}
