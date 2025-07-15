@@ -525,12 +525,12 @@ const ViewClientTransaction = () => {
                         >
                           <PencilSquare />
                         </Button>
-                        <Button
+                        {/* <Button
                           variant="danger"
                           onClick={() => confirmDelete(txn)}
                         >
                           <FaTrash />
-                        </Button>
+                        </Button> */}
                       </div>
                     </td>
                   </tr>

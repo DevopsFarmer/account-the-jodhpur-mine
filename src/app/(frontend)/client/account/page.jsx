@@ -238,7 +238,7 @@ const ViewClientAccount = () => {
                     <td>{formatTime(acc.clientCreatedAt)}</td>
                     <td className="d-flex gap-2 justify-content-center flex-wrap">
                       <Button variant="info" onClick={() => handleView(acc)}><FaEye /></Button>
-                      <Button variant="danger" onClick={() => confirmDelete(acc)}><FaTrash /></Button>
+                      {/* <Button variant="danger" onClick={() => confirmDelete(acc)}><FaTrash /></Button> */}
                     </td>
                   </tr>
                 ))

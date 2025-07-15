@@ -264,7 +264,7 @@ const ViewVendorAccount = () => {
                     <td>
                       <div className="d-flex flex-wrap gap-2 justify-content-center">
                         <Button variant="info" onClick={() => handleView(vendor)}><FaEye /></Button>
-                        <Button variant="danger" onClick={() => confirmDelete(vendor)}><FaTrash /></Button>
+                        {/* <Button variant="danger" onClick={() => confirmDelete(vendor)}><FaTrash /></Button> */}
                       </div>
                     </td>
                   </tr>

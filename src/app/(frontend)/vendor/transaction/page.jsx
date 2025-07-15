@@ -461,7 +461,7 @@ const ViewVendorTransaction = () => {
                         >
                           <PencilSquare />
                         </Button>
-                         <Button variant="danger" onClick={() => confirmDelete(txn)}><FaTrash /></Button>
+                         {/* <Button variant="danger" onClick={() => confirmDelete(txn)}><FaTrash /></Button> */}
                       </div>
                     </td>
                   </tr>
