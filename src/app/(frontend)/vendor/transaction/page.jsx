@@ -129,54 +129,135 @@ const ViewVendorTransaction = () => {
   };
 
   const downloadPDF = async () => {
-    if (typeof window === 'undefined' || !selectedVendorTransaction) return;
-
+    if (typeof window === "undefined" || !selectedVendorTransaction) return;
     try {
-      const html2pdf = (await import('html2pdf.js')).default;
-
-      const element = document.getElementById("pdf-content");
-      if (!element) return;
-
-      const pdfContentWrapper = document.createElement('div');
-      pdfContentWrapper.innerHTML = element.innerHTML;
-
-      pdfContentWrapper.style.padding = '20px';
-      pdfContentWrapper.style.fontFamily = 'Arial, sans-serif';
-      pdfContentWrapper.style.fontSize = '12px';
-
-      const tables = pdfContentWrapper.querySelectorAll('table');
-      tables.forEach(table => {
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
+      // Load jsPDF and AutoTable dynamically
+      if (!window.jspdf) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        await new Promise((resolve, reject) => {
+          script.onload = () => window.jspdf ? resolve() : reject(new Error('jsPDF failed to load'));
+          script.onerror = () => reject(new Error('Failed to load jsPDF script'));
+          document.head.appendChild(script);
+        });
+      }
+      if (!window.jspdf.jsPDF.API.autoTable) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
+        await new Promise((resolve, reject) => {
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load AutoTable plugin'));
+          document.head.appendChild(script);
+        });
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 40;
+      let startY = 0;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text("Vendor Transaction Report", pageWidth / 2, startY + 50, { align: "center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(100);
+      doc.text(`For: ${selectedVendorTransaction.vendorName?.vendorName || "N/A"}`, pageWidth / 2, startY + 68, { align: "center" });
+      doc.setDrawColor(200);
+      doc.line(margin, startY + 85, pageWidth - margin, startY + 85);
+      startY = 100;
+      doc.autoTable({
+        body: [
+          [{ content: "Query License:", styles: { fontStyle: 'bold' } }, selectedVendorTransaction.query_license?.query_license || "N/A"],
+          [{ content: "Nearby Village:", styles: { fontStyle: 'bold' } }, selectedVendorTransaction.near_village?.near_village || "N/A"],
+          [{ content: "Payment Status:", styles: { fontStyle: 'bold' } }, selectedVendorTransaction.paymentstatus?.charAt(0).toUpperCase() + selectedVendorTransaction.paymentstatus?.slice(1) || "N/A"],
+        ],
+        startY: startY, theme: 'plain', styles: { fontSize: 10, cellPadding: 3 }, tableWidth: (pageWidth / 2) - margin, margin: { left: margin },
       });
-      const cells = pdfContentWrapper.querySelectorAll('th, td');
-      cells.forEach(cell => {
-        cell.style.padding = '8px';
-        cell.style.border = '1px solid #ddd';
+      doc.autoTable({
+        body: [
+          [{ content: "Created At:", styles: { fontStyle: 'bold' } }, `${formatDate(selectedVendorTransaction.vendorCreatedAt)}`],
+          [{ content: "Last Updated At:", styles: { fontStyle: 'bold' } }, `${formatDate(selectedVendorTransaction.vendorUpdatedAt)}`],
+          [{ content: "Transaction Desc:", styles: { fontStyle: 'bold' } }, selectedVendorTransaction.description || "N/A"],
+        ],
+        startY: startY, theme: 'plain', styles: { fontSize: 10, cellPadding: 3 }, tableWidth: (pageWidth / 2) - margin, margin: { left: pageWidth / 2 },
       });
-
-      const opt = {
-        margin: 0.5,
-        filename: `Vendor_Transaction_${selectedVendorTransaction.vendorName?.vendorName || "Details"}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: true,
-          scrollY: 0,
-          windowWidth: pdfContentWrapper.scrollWidth,
-          windowHeight: pdfContentWrapper.scrollHeight
+      startY = doc.autoTable.previous.finalY + 20;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Financial Summary", margin, startY);
+      startY += 15;
+      doc.autoTable({
+        head: [['Total Amount', 'Paid Amount', 'Remaining Amount']],
+        body: [[`₹ ${selectedVendorTransaction.totalAmount?.toFixed(2) || '0.00'}`, `₹ ${selectedVendorTransaction.totalAmountvendor?.toFixed(2) || '0.00'}`, `₹ ${(selectedVendorTransaction.remainingAmount || (selectedVendorTransaction.totalAmount - selectedVendorTransaction.totalAmountvendor)).toFixed(2)}`]],
+        startY: startY, theme: 'grid',
+        headStyles: { fontStyle: 'bold', halign: 'center', fillColor: [230, 230, 230], textColor: 0 },
+        bodyStyles: { fontSize: 11, halign: 'center' },
+      });
+      startY = doc.autoTable.previous.finalY + 30;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Work Progress Stages", margin, startY);
+      startY += 20;
+      const tableColumns = [
+        { header: "#", dataKey: "sn" },
+        { header: "Company Stage", dataKey: "cStage" },
+        { header: "Company Desc.", dataKey: "cDesc" },
+        { header: "Status", dataKey: "status" },
+        { header: "Vendor Stage", dataKey: "vStage" },
+        { header: "Vendor Desc.", dataKey: "vDesc" },
+        { header: "Date", dataKey: "date" },
+      ];
+      const tableRows = Array.from({ length: Math.max(selectedVendorTransaction.workingStage?.length || 0, selectedVendorTransaction.workingStagevendor?.length || 0) })
+        .map((_, index) => ({
+          sn: index + 1,
+          cStage: selectedVendorTransaction.workingStage?.[index]?.workingStage || "N/A",
+          cDesc: selectedVendorTransaction.workingStage?.[index]?.workingDescription || "N/A",
+          status: selectedVendorTransaction.workingStage?.[index]?.workstatus || "incomplete",
+          vStage: selectedVendorTransaction.workingStagevendor?.[index]?.workingStagevendor || "N/A",
+          vDesc: selectedVendorTransaction.workingStagevendor?.[index]?.workingDescriptionvendor || "N/A",
+          date: selectedVendorTransaction.workingStagevendor?.[index]?.stageDate ? formatDate(selectedVendorTransaction.workingStagevendor[index].stageDate) : "No date",
+        }));
+      doc.autoTable({
+        columns: tableColumns,
+        body: tableRows,
+        startY: startY,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold', fontSize: 9, halign: 'center' },
+        bodyStyles: { fontSize: 9, cellPadding: 4, valign: 'middle' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: {
+          sn: { cellWidth: 25, halign: 'center' },
+          cStage: { cellWidth: 70 },
+          vStage: { cellWidth: 70 },
+          status: { cellWidth: 60, halign: 'center' },
+          date: { cellWidth: 60, halign: 'center' },
         },
-        jsPDF: {
-          unit: "in",
-          format: "a4",
-          orientation: "portrait"
+        didDrawCell: (data) => {
+          if (data.column.dataKey === 'status' && data.cell.section === 'body') {
+            const text = data.cell.text[0]?.toLowerCase();
+            let fillColor;
+            if (text === 'complete') fillColor = [211, 255, 211];
+            else if (text === 'incomplete') fillColor = [255, 211, 211];
+            if (fillColor) {
+              doc.setFillColor(...fillColor);
+              doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+              doc.setTextColor(0);
+              doc.text(data.cell.text, data.cell.x + data.cell.padding('left'), data.cell.y + data.cell.height / 2, { baseline: 'middle' });
+            }
+          }
         },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      await html2pdf().set(opt).from(pdfContentWrapper).save();
-
+        didDrawPage: (data) => {
+          doc.setFontSize(10);
+          doc.setTextColor(150);
+          doc.text(
+            `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
+            pageWidth / 2,
+            doc.internal.pageSize.getHeight() - 20,
+            { align: 'center' }
+          );
+        }
+      });
+      doc.save(`Vendor_Transaction_${selectedVendorTransaction.vendorName?.vendorName || "Details"}_${new Date().toISOString().slice(0,10)}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
