@@ -33,19 +33,19 @@ const AddVendorTransaction = () => {
     const handleChange = (e) => {
       const { name, value } = e.target;
       
-      if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
-        const valid = value.replace(/[^a-z ]/g, '');
-        setForm(prev => ({ ...prev, [name]: valid }));
-        return;
-      }
+      // if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
+      //   const valid = value.replace(/[^a-z ]/g, '');
+      //   setForm(prev => ({ ...prev, [name]: valid }));
+      //   return;
+      // }
   
       if (name === 'state') {
         const selected = locationData.find(s => s.state === value);
         const distList = selected?.districts.map(d => d.district) || [];
         setDistricts([...distList, 'Other']);
         setTehsils([]);
-        setVillages([]);
-        setForm(prev => ({ ...prev, state: value, district: '', tehsil: '', near_village: '' }));
+        
+        setForm(prev => ({ ...prev, state: value, district: '' }));
         setIsOtherDistrict(false);
         return;
       }
@@ -53,7 +53,7 @@ const AddVendorTransaction = () => {
       if (name === 'district') {
         if (value === 'Other') {
           setIsOtherDistrict(true);
-          setForm(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+          setForm(prev => ({ ...prev, district: value }));
           setTehsils([]);
           setVillages([]);
         } else {
@@ -62,7 +62,7 @@ const AddVendorTransaction = () => {
           const tehsilList = districtData?.subDistricts.map(t => t.subDistrict) || [];
           setTehsils(tehsilList);
           setVillages([]);
-          setForm(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+          setForm(prev => ({ ...prev, district: value }));
           setIsOtherDistrict(false);
         }
         return;
@@ -202,17 +202,20 @@ const AddVendorTransaction = () => {
   };
 
   const addStage = () => {
-    setWorkingStages([...workingStages, {
-      workingStage: '',
-      workingDescription: '',
-      workstatus: 'incomplete'
-    }]);
+    setWorkingStages([
+      { 
+        workingStage: '', 
+        workingDescription: '', 
+        workstatus: 'incomplete'
+      },
+      ...workingStages,
+    ]);
   };
 
   const addStageVendor = () => {
     setWorkingStagesVendor([
+      { workingStagevendor: '', workingDescriptionvendor: '', stageDate: '' },
       ...workingStagesVendor,
-      { workingStagevendor: '', workingDescriptionvendor: '', stageDate: '' }
     ]);
   };
 
@@ -268,36 +271,36 @@ const AddVendorTransaction = () => {
     setError("");
     setSuccess("");
 
-    if (!form.vendorName || !form.query_license || !form.near_village || !form.state || !form.district || !form.tehsil) {
+    if (!form.vendorName || !form.state || !form.district ) {
       setError("Please fill in all required fields: Vendor Name, Query License, and Near Village.");
       return;
     }
 
     const matchedVendor = vendors.find((vendor) =>
-      (vendor.vendorName === form.vendorName || vendor.id === form.vendorName) &&
-      (vendor.query_license === form.query_license || vendor.id === form.query_license) &&
-      (vendor.near_village === form.near_village || vendor.id === form.near_village)
+      (vendor.vendorName === form.vendorName || vendor.id === form.vendorName) 
+      // (vendor.query_license === form.query_license || vendor.id === form.query_license) &&
+      // (vendor.near_village === form.near_village || vendor.id === form.near_village)
     );
 
     if (!matchedVendor) {
       const vendorMatch = vendors.some((vendor) => vendor.vendorName === form.vendorName || vendor.id === form.vendorName);
-      const licenseMatch = vendors.some((vendor) => vendor.query_license === form.query_license || vendor.id === form.query_license);
-      const villageMatch = vendors.some((vendor) => vendor.near_village === form.near_village || vendor.id === form.near_village);
+      // const licenseMatch = vendors.some((vendor) => vendor.query_license === form.query_license || vendor.id === form.query_license);
+      // const villageMatch = vendors.some((vendor) => vendor.near_village === form.near_village || vendor.id === form.near_village);
       const stateMatch = vendors.some((vendor) => vendor.state === form.state || vendor.id === form.state);
       const districtMatch = vendors.some((vendor) => vendor.district === form.district || vendor.id === form.district);
-      const tehsilMatch = vendors.some((vendor) => vendor.tehsil === form.tehsil || vendor.id === form.tehsil);
+      //const tehsilMatch = vendors.some((vendor) => vendor.tehsil === form.tehsil || vendor.id === form.tehsil);
 
-      if (licenseMatch && villageMatch && !vendorMatch && !stateMatch && !districtMatch && !tehsilMatch) {
+      if ( !vendorMatch && !stateMatch && !districtMatch ) {
         setError("Vendor Name is incorrect for the selected Query License and Near Village.");
-      } else if (vendorMatch && licenseMatch && !villageMatch && !stateMatch && !districtMatch && !tehsilMatch) {
+      } else if (vendorMatch && !stateMatch && !districtMatch ) {
         setError("Near Village is incorrect for the selected Vendor Name and Query License.");
-      } else if (vendorMatch && villageMatch && !licenseMatch && !stateMatch && !districtMatch && !tehsilMatch) {
+      } else if (vendorMatch && !stateMatch && !districtMatch ) {
         setError("Query License is incorrect for the selected Vendor Name and Near Village.");
-      } else if (vendorMatch && !licenseMatch && !villageMatch) {
+      } else if (vendorMatch && !stateMatch && !districtMatch ) {
         setError("Both Query License and Near Village are incorrect for the selected Vendor Name.");
-      } else if (!vendorMatch && licenseMatch && !villageMatch) {
+      } else if (!vendorMatch && !stateMatch && !districtMatch ) {
         setError("Vendor Name and Near Village are incorrect for the selected Query License.");
-      } else if (!vendorMatch && !licenseMatch && villageMatch) {
+      } else if (!vendorMatch && !stateMatch && !districtMatch ) {
         setError("Vendor Name and Query License are incorrect for the selected Near Village.");
       } else {
         setError("The provided Vendor Name, Query License, and Near Village do not match any known vendor.");
@@ -455,7 +458,7 @@ const AddVendorTransaction = () => {
                       )}
                     </Form.Group>
                  
-                    <Form.Group>
+                    {/* <Form.Group>
                       <Form.Label className="fw-bold fs-5">
                         <TbCreditCard className="me-1" /> Query License
                         <span className="text-danger ms-1">*</span>
@@ -481,7 +484,8 @@ const AddVendorTransaction = () => {
                             ))}
                         </datalist>
                       )}
-                    </Form.Group>
+                    </Form.Group> */}
+
                  
                              <Row>
                                <Col md={6}>
@@ -515,7 +519,7 @@ const AddVendorTransaction = () => {
                                </Col>
                              </Row>
                              <Row>
-                               <Col md={6}>
+                               {/* <Col md={6}>
                                  <Form.Group className="mb-3">
                                    <Form.Label className="fw-bold fs-5">Tehsil <span className="text-danger">*</span></Form.Label>
                                    {isOtherDistrict ? (
@@ -528,8 +532,8 @@ const AddVendorTransaction = () => {
                                    )}
                                    <Form.Control.Feedback type="invalid">Tehsil is required.</Form.Control.Feedback>
                                  </Form.Group>
-                               </Col>
-                               <Col md={6}>
+                               </Col> */}
+                               {/* <Col md={6}>
                                  <Form.Group className="mb-3">
                                    <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
                                    {isOtherDistrict ? (
@@ -542,7 +546,14 @@ const AddVendorTransaction = () => {
                                    )}
                                    <Form.Control.Feedback type="invalid">Nearby Village is required.</Form.Control.Feedback>
                                  </Form.Group>
-                               </Col>
+                               </Col> */}
+                               <Col md={6}>
+                               <Form.Group className="mb-3">
+                               <Form.Control type="text" name="near_village"  pattern="^[a-z ]+$" value={form.near_village} onChange={handleChange} placeholder="Other Village" />
+         
+                             </Form.Group>
+
+                           </Col>
                              </Row>
                            </Col>
 

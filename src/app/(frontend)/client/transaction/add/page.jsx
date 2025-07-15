@@ -215,20 +215,24 @@ const AddClientTransaction = () => {
   };
 
   const addStage = () => {
-    setWorkingStages([...workingStages, { 
+    setWorkingStages([ { 
       workingStage: '', 
       workingDescription: '', 
       workstatus: 'incomplete',
-    }]);
+    },...workingStages]);
   };
 
   const addStageClient = () => {
-    setWorkingStagesClient([...workingStagesClient, { 
-      workingStageclient: '', 
-      workingDescriptionclient: '', 
-      stageDate: ''
-    }]);
+    setWorkingStagesClient([
+      { 
+        workingStageclient: '', 
+        workingDescriptionclient: '', 
+        stageDate: '' 
+      },
+      ...workingStagesClient,
+    ]);
   };
+  
 
   const removeStage = (index) => {
     if (workingStages.length > 1) {
@@ -288,8 +292,8 @@ const AddClientTransaction = () => {
     setError("");
     setSuccess("");
 
-    if (!form.clientName || !form.query_license || !form.state || !form.district || !form.tehsil || !form.near_village) {
-      setError("Please fill in all required fields: Client Name, Query License, State, District, Tehsil, and Near Village.");
+    if (!form.clientName || !form.state || !form.district || !form.tehsil || !form.near_village) {
+      setError("Please fill in all required fields: Client Name, State, District, Tehsil, and Near Village.");
       return;
     }
 
@@ -488,7 +492,7 @@ const AddClientTransaction = () => {
                     <Form.Group>
                       <Form.Label className="fw-bold fs-5">
                         <TbCreditCard className="me-1" /> Query License
-                        <span className="text-danger ms-1">*</span>
+                        
                       </Form.Label>
                       <Form.Control
                         list="query-license-options"
@@ -496,7 +500,7 @@ const AddClientTransaction = () => {
                         value={form.query_license}
                         onChange={handleFormChange}
                         placeholder="Select or type Query License"
-                        required
+                        
                         className="p-2"
                       />
                       {form.query_license.length >= 2 && (
@@ -635,7 +639,7 @@ const AddClientTransaction = () => {
                       <Col xs={12} className="d-flex justify-content-end">
                         <Button
                           variant="danger"
-                          onClick={() => removeStage(index)}
+                          onClick={() => removeStage(idx)}
                           disabled={workingStages.length === 1}
                           className="fw-bold d-flex align-items-center justify-content-center"
                           size="sm"

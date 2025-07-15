@@ -348,10 +348,10 @@ const EditVendorTransaction = () => {
 
           {/* Read-only Query License and Near Village */}
           <Row className="my-4">
-            <Col sm={6} className="pb-3 pb-md-0">
+            {/* <Col sm={6} className="pb-3 pb-md-0">
               <Form.Label className="fw-bold fs-5 text-center text-wrap text-capitalize">Query License</Form.Label>
               <Form.Control value={form.query_license} readOnly className="bg-light" />
-            </Col>
+            </Col> */}
             <Col sm={6}>
               <Form.Label className="fw-bold fs-5 text-center text-wrap text-capitalize">Nearby Village</Form.Label>
               <Form.Control value={form.near_village} readOnly className="bg-light" />
@@ -415,6 +415,14 @@ const EditVendorTransaction = () => {
                     onChange={(e) => updateStage(index, 'workingDescription', e.target.value)}
                   />
                 </Col>
+                <Col sm={3} className="pb-3 pb-md-0">
+                {/* <Form.Control
+                  type="date"
+                  placeholder="Stage Date"
+                  value={stage.stageDate ? new Date(stage.stageDate).toISOString().split('T')[0] : ''}
+                  onChange={(e) => updateStage(index, 'stageDate', e.target.value)}
+                /> */}
+              </Col>
                 <Col sm={2} className="pb-3 pb-md-0">
                   <Form.Label className="fw-semibold">Work Status</Form.Label>
                   <div className={`p-2 rounded text-center fw-bold text-uppercase text-xs ${stage.workstatus === 'complete' ? 'bg-success text-white' : 'bg-warning text-dark'}`}>

@@ -1,12 +1,11 @@
-"use client"; // Enables client-side features like localStorage and router
+"use client"; 
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card } from "react-bootstrap";
 import { useRouter } from "next/navigation";
-import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser,FaTrash, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
-import axios from "axios"; // Import axios for API calls
+import axios from "axios"; 
 
-// Helper function to format date as DD/MM/YYYY
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -15,7 +14,6 @@ const formatDate = (date) =>
     timeZone: "Asia/Kolkata"
   });
 
-// Helper function to format time as HH:MM:SS AM/PM
 const formatTime = (date) =>
   new Date(date).toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -28,23 +26,22 @@ const formatTime = (date) =>
 const ViewVendorTransaction = () => {
   const router = useRouter();
 
-  // States for authentication, data, filters, modals, and UI
   const [userRole, setUserRole] = useState(null);
-  const [allVendorTransactions, setAllVendorTransactions] = useState([]); // All transactions fetched
-  const [filteredVendorTransactions, setFilteredVendorTransactions] = useState([]); // Transactions after applying filters
+  const [allVendorTransactions, setAllVendorTransactions] = useState([]); 
+  const [filteredVendorTransactions, setFilteredVendorTransactions] = useState([]); 
   const [searchName, setSearchName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedVendorTransaction, setSelectedVendorTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(""); // Error message displayed using Alert
+  const [error, setError] = useState(""); 
 
-  // Pagination states
-  const itemsPerPage = 10; // Number of transactions per page is 10
-  const [currentPage, setCurrentPage] = useState(1); // Current page number
+  const itemsPerPage = 10; 
+  const [currentPage, setCurrentPage] = useState(1); 
 
-  // Validate user role using localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user");
 
@@ -69,13 +66,11 @@ const ViewVendorTransaction = () => {
     setIsLoading(false);
   }, []);
 
-  // Fetch vendor transactions if authorized
   useEffect(() => {
     const fetchData = async () => {
       if (userRole === "admin" || userRole === "manager") {
         setIsLoading(true);
         try {
-          // Fetch all transactions to enable client-side filtering and pagination
           const res = await axios.get("/api/vendor-transaction?limit=100000");
           setAllVendorTransactions(res.data.docs || []);
           setFilteredVendorTransactions(res.data.docs || []); // Initially set filtered to all
@@ -91,7 +86,6 @@ const ViewVendorTransaction = () => {
     fetchData();
   }, [userRole]);
 
-  // Function to apply filters by name and date range
   const applyFilters = (name, start, end) => {
     const searchTerm = name.toLowerCase();
     const startDateObj = start ? new Date(start) : null;
@@ -113,51 +107,43 @@ const ViewVendorTransaction = () => {
     });
 
     setFilteredVendorTransactions(results);
-    setCurrentPage(1); // Reset to first page after applying filters
+    setCurrentPage(1); 
   };
 
-  // Handle search input change
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchName(value);
     applyFilters(value, startDate, endDate);
   };
 
-  // Handle start date change
   const handleStartDateChange = (e) => {
     const value = e.target.value;
     setStartDate(value);
     applyFilters(searchName, value, endDate);
   };
 
-  // Handle end date change
   const handleEndDateChange = (e) => {
     const value = e.target.value;
     setEndDate(value);
     applyFilters(searchName, startDate, value);
   };
 
-  // Function to download PDF
   const downloadPDF = async () => {
     if (typeof window === 'undefined' || !selectedVendorTransaction) return;
 
     try {
-      // Dynamically import html2pdf only on the client side
       const html2pdf = (await import('html2pdf.js')).default;
 
       const element = document.getElementById("pdf-content");
       if (!element) return;
 
-      // Create a new div to hold the content for PDF generation
       const pdfContentWrapper = document.createElement('div');
       pdfContentWrapper.innerHTML = element.innerHTML;
 
-      // Apply inline styles to the wrapper for consistent layout
       pdfContentWrapper.style.padding = '20px';
       pdfContentWrapper.style.fontFamily = 'Arial, sans-serif';
       pdfContentWrapper.style.fontSize = '12px';
 
-      // Adjust specific elements within the wrapper for PDF
       const tables = pdfContentWrapper.querySelectorAll('table');
       tables.forEach(table => {
         table.style.width = '100%';
@@ -197,28 +183,22 @@ const ViewVendorTransaction = () => {
     }
   };
 
-  // Toggle payment status function
   const togglePaymentStatus = async (id) => {
     try {
-      // Find the transaction to get current status
       const transactionToUpdate = allVendorTransactions.find(txn => txn.id === id);
       if (!transactionToUpdate) return;
 
       const newStatus = transactionToUpdate.paymentstatus === "pending" ? "paid" : "pending";
 
-      // Update on the server
       await fetch(`/api/vendor-transaction/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentstatus: newStatus }),
       });
 
-      // Update the allVendorTransactions state
       const updatedAllVendorTransactions = allVendorTransactions.map(txn =>
         txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
       );
-
-      // Update the filteredVendorTransactions state while preserving the current filter
       const updatedFilteredVendorTransactions = filteredVendorTransactions.map(txn =>
         txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
       );
@@ -226,7 +206,6 @@ const ViewVendorTransaction = () => {
       setAllVendorTransactions(updatedAllVendorTransactions);
       setFilteredVendorTransactions(updatedFilteredVendorTransactions);
 
-      // Update selectedVendorTransaction if it's the one being modified
       if (selectedVendorTransaction && selectedVendorTransaction.id === id) {
         setSelectedVendorTransaction({ ...selectedVendorTransaction, paymentstatus: newStatus });
       }
@@ -237,17 +216,12 @@ const ViewVendorTransaction = () => {
     }
   };
 
-  // Toggle work status function for individual work stages
-  const toggleWorkStatus = async (transactionId, stageIndex) => {
+    const toggleWorkStatus = async (transactionId, stageIndex) => {
     try {
-      // Find the transaction
       const transactionToUpdate = allVendorTransactions.find(txn => txn.id === transactionId);
       if (!transactionToUpdate || !transactionToUpdate.workingStage) return;
-
-      // Create a copy of the working stages array
       const updatedWorkingStage = [...transactionToUpdate.workingStage];
 
-      // Toggle the status of the specific stage
       const currentStatus = updatedWorkingStage[stageIndex]?.workstatus || "incomplete";
       const newStatus = currentStatus === "incomplete" ? "complete" : "incomplete";
 
@@ -256,19 +230,15 @@ const ViewVendorTransaction = () => {
         workstatus: newStatus
       };
 
-      // Update on the server
       await fetch(`/api/vendor-transaction/${transactionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workingStage: updatedWorkingStage }),
       });
 
-      // Update the allVendorTransactions state
       const updatedAllVendorTransactions = allVendorTransactions.map(txn =>
         txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
       );
-
-      // Update the filteredVendorTransactions state
       const updatedFilteredVendorTransactions = filteredVendorTransactions.map(txn =>
         txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
       );
@@ -276,7 +246,6 @@ const ViewVendorTransaction = () => {
       setAllVendorTransactions(updatedAllVendorTransactions);
       setFilteredVendorTransactions(updatedFilteredVendorTransactions);
 
-      // Update selectedVendorTransaction if it's the one being modified
       if (selectedVendorTransaction && selectedVendorTransaction.id === transactionId) {
         setSelectedVendorTransaction({ ...selectedVendorTransaction, workingStage: updatedWorkingStage });
       }
@@ -287,13 +256,40 @@ const ViewVendorTransaction = () => {
     }
   };
 
-  // Get current page items for display
+  const handleDelete = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.delete(`/api/vendor-transaction/${transactionToDelete.id}`);
+      if (response.status === 200) {
+        setAllVendorTransactions(prev => prev.filter(txn => txn.id !== transactionToDelete.id));
+        setFilteredVendorTransactions(prev => prev.filter(txn => txn.id !== transactionToDelete.id));
+        setShowDeleteModal(false);
+        setError("");
+        setTransactionToDelete(null);
+      }
+    } catch (err) {
+      console.error("Error deleting transaction:", err);
+      setError("Failed to delete transaction. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setTransactionToDelete(null);
+  };
+
+  const confirmDelete = (txn) => {
+    setTransactionToDelete(txn);
+    setShowDeleteModal(true);
+  };
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentTransactions = filteredVendorTransactions.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredVendorTransactions.length / itemsPerPage);
 
-  // Render pagination buttons
   const renderPagination = () => {
     const pages = [];
 
@@ -335,7 +331,6 @@ const ViewVendorTransaction = () => {
     return <div className="d-flex flex-wrap gap-2 justify-content-center my-3">{pages}</div>;
   };
 
-  // Show spinner while loading or unauthorized
   if (isLoading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -345,7 +340,6 @@ const ViewVendorTransaction = () => {
     );
   }
 
-  // Display unauthorized message if not admin or manager
   if (userRole !== "admin" && userRole !== "manager") {
     return (
       <Container className="text-center mt-5">
@@ -364,14 +358,12 @@ const ViewVendorTransaction = () => {
           <FaClipboard /> View All Vendor Transactions
         </h4>
 
-        {/* Show error using Alert */}
         {error && (
           <Alert variant="danger" className="text-center fw-semibold">
             {error}
           </Alert>
         )}
 
-        {/* Search & Date Filter */}
         <Form className="mb-4">
           <Row className="gy-3">
             <Col xs={12} md={4}>
@@ -407,7 +399,6 @@ const ViewVendorTransaction = () => {
           </Row>
         </Form>
 
-        {/* Responsive Table */}
         <div className="table-responsive">
           <Table className="table-bordered table-hover text-center align-middle">
             <thead className="table-dark">
@@ -470,6 +461,7 @@ const ViewVendorTransaction = () => {
                         >
                           <PencilSquare />
                         </Button>
+                         {/* <Button variant="danger" onClick={() => confirmDelete(txn)}><FaTrash /></Button> */}
                       </div>
                     </td>
                   </tr>
@@ -516,10 +508,10 @@ const ViewVendorTransaction = () => {
                       <FaUser className="me-2 text-secondary" />
                       <strong>Vendor Name:</strong> {selectedVendorTransaction.vendorName?.vendorName || "N/A"}
                     </p>
-                    <p>
+                    {/* <p>
                       <FaWrench className="me-2 text-secondary" />
                       <strong>Query License:</strong> {selectedVendorTransaction.query_license?.query_license || "N/A"}
-                    </p>
+                    </p> */}
                     <p>
                       <FaMapMarkerAlt className="me-2 text-secondary" />
                       <strong>Nearby Village:</strong> {selectedVendorTransaction.near_village?.near_village || "N/A"}
@@ -685,6 +677,25 @@ const ViewVendorTransaction = () => {
               </div>
             )}
           </Modal.Body>
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal show={showDeleteModal} onHide={handleCancelDelete}>
+          <Modal.Header closeButton>
+            <Modal.Title>Delete Transaction</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to delete this transaction?
+            <ul className="mt-3">
+              <li><strong>Vendor:</strong> {transactionToDelete?.vendorName?.vendorName}</li>
+              <li><strong>Query License:</strong> {transactionToDelete?.query_license?.query_license}</li>
+              <li><strong>Amount:</strong> ₹{transactionToDelete?.totalAmount}</li>
+            </ul>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCancelDelete}>Cancel</Button>
+            <Button variant="danger" onClick={handleDelete}>Delete</Button>
+          </Modal.Footer>
         </Modal>
       </Container>
     </>
