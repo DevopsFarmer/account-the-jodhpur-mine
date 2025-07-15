@@ -187,8 +187,15 @@ const ViewVendorTransaction = () => {
       doc.text("Financial Summary", margin, startY);
       startY += 15;
       doc.autoTable({
-        head: [['Total Amount', 'Paid Amount', 'Remaining Amount']],
-        body: [[`₹ ${selectedVendorTransaction.totalAmount?.toFixed(2) || '0.00'}`, `₹ ${selectedVendorTransaction.totalAmountvendor?.toFixed(2) || '0.00'}`, `₹ ${(selectedVendorTransaction.remainingAmount || (selectedVendorTransaction.totalAmount - selectedVendorTransaction.totalAmountvendor)).toFixed(2)}`]],
+        head: [['Total Amount', 'Received Amount', 'Remaining Amount']],
+        body: [[
+          `${(Number(selectedVendorTransaction.totalAmount) || 0).toFixed(2)}`,
+          `${(Number(selectedVendorTransaction.totalAmountvendor) || 0).toFixed(2)}`,
+          `${(
+            Number(selectedVendorTransaction.remainingAmount) ||
+            (Number(selectedVendorTransaction.totalAmount) - Number(selectedVendorTransaction.totalAmountvendor)) || 0
+          ).toFixed(2)}`
+        ]],
         startY: startY, theme: 'grid',
         headStyles: { fontStyle: 'bold', halign: 'center', fillColor: [230, 230, 230], textColor: 0 },
         bodyStyles: { fontSize: 11, halign: 'center' },

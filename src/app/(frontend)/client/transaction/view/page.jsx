@@ -223,7 +223,14 @@ const downloadPDF = async () => {
     startY += 15;
     doc.autoTable({
       head: [['Total Amount', 'Received Amount', 'Remaining Amount']],
-      body: [[`₹ ${selectedTransaction.totalAmount?.toFixed(2) || '0.00'}`, `₹ ${selectedTransaction.totalAmountclient?.toFixed(2) || '0.00'}`, `₹ ${(selectedTransaction.remainingAmount || (selectedTransaction.totalAmount - selectedTransaction.totalAmountclient)).toFixed(2)}`]],
+      body: [[
+        `${(Number(selectedTransaction.totalAmount) || 0).toFixed(2)}`,
+        `${(Number(selectedTransaction.totalAmountclient) || 0).toFixed(2)}`,
+        `${(
+          Number(selectedTransaction.remainingAmount) ||
+          (Number(selectedTransaction.totalAmount) - Number(selectedTransaction.totalAmountclient)) || 0
+        ).toFixed(2)}`
+      ]],
       startY: startY, theme: 'grid',
       headStyles: { fontStyle: 'bold', halign: 'center', fillColor: [230, 230, 230], textColor: 0 },
       bodyStyles: { fontSize: 11, halign: 'center' },
