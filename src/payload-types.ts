@@ -168,7 +168,7 @@ export interface ClientAccount {
   id: number;
   clientName: string;
   clientMobile: string;
-  query_license: string;
+  query_license?: string | null;
   mining_license?: string | null;
   near_village: string;
   tehsil?: string | null;
@@ -188,7 +188,7 @@ export interface ClientTransaction {
   id: number;
   voucherNo?: string | null;
   clientName: number | ClientAccount;
-  query_license: number | ClientAccount;
+  query_license?: (number | null) | ClientAccount;
   state: number | ClientAccount;
   district: number | ClientAccount;
   tehsil: number | ClientAccount;
@@ -227,8 +227,8 @@ export interface ClientTransaction {
 export interface VendorTransaction {
   id: number;
   vendorName: number | Vendor;
-  query_license: number | Vendor;
-  near_village: number | Vendor;
+  query_license?: (number | null) | Vendor;
+  near_village?: (number | null) | Vendor;
   workingStage?:
     | {
         workingStage?: string | null;
@@ -242,6 +242,7 @@ export interface VendorTransaction {
     | {
         workingStagevendor?: string | null;
         workingDescriptionvendor?: string | null;
+        stageDate?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -263,9 +264,9 @@ export interface Vendor {
   id: number;
   vendorName: string;
   vendorMobile: string;
-  query_license: string;
+  query_license?: string | null;
   mining_license?: string | null;
-  near_village: string;
+  near_village?: string | null;
   tehsil?: string | null;
   district?: string | null;
   state?: string | null;
@@ -503,6 +504,7 @@ export interface VendorTransactionSelect<T extends boolean = true> {
     | {
         workingStagevendor?: T;
         workingDescriptionvendor?: T;
+        stageDate?: T;
         id?: T;
       };
   totalAmount?: T;

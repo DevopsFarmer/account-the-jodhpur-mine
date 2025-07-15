@@ -243,7 +243,7 @@ const ViewVendorAccount = () => {
                 <th>S.No</th>
                 <th>Name</th>
                 <th>Mobile</th>
-                <th>Query License</th>
+                {/* <th>Query License</th> */}
                 <th>Nearby Village</th>
                 <th>Date</th>
                 <th>Time</th>
@@ -257,14 +257,14 @@ const ViewVendorAccount = () => {
                     <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td>{vendor.vendorName || "N/A"}</td>
                     <td>{vendor.vendorMobile || "N/A"}</td>
-                    <td>{vendor.query_license || "NA"}</td>
+                    {/* <td>{vendor.query_license || "NA"}</td> */}
                     <td>{vendor.near_village || "NA"}</td>
                     <td>{formatDate(vendor.createdAt)}</td>
                     <td>{formatTime(vendor.createdAt)}</td>
                     <td>
                       <div className="d-flex flex-wrap gap-2 justify-content-center">
                         <Button variant="info" onClick={() => handleView(vendor)}><FaEye /></Button>
-                        <Button variant="danger" onClick={() => confirmDelete(vendor)}><FaTrash /></Button>
+                        {/* <Button variant="danger" onClick={() => confirmDelete(vendor)}><FaTrash /></Button> */}
                       </div>
                     </td>
                   </tr>
@@ -293,13 +293,13 @@ const ViewVendorAccount = () => {
                   <Col md={6}><strong>Name:</strong> {selectedVendorAccount.vendorName}</Col>
                   <Col md={6}><strong>Mobile:</strong> {selectedVendorAccount.vendorMobile}</Col>
                 </Row>
-                <Row className="mb-2">
+                {/* <Row className="mb-2">
                   <Col md={6}><strong>Query License:</strong> {selectedVendorAccount.query_license}</Col>
                   <Col md={6}><strong>Mining License:</strong> {selectedVendorAccount.mining_license || "NA"}</Col>
-                </Row>
+                </Row> */}
                 <Row className="mb-2">
                   <Col md={6}><strong>Nearby Village:</strong> {selectedVendorAccount.near_village || "NA"}</Col>
-                  <Col md={6}><strong>Tehsil:</strong> {selectedVendorAccount.tehsil || "NA"}</Col>
+                  {/* <Col md={6}><strong>Tehsil:</strong> {selectedVendorAccount.tehsil || "NA"}</Col> */}
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}><strong>District:</strong> {selectedVendorAccount.district || "NA"}</Col>

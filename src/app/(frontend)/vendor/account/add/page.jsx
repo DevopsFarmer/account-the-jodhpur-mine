@@ -24,6 +24,8 @@ const AddVendorAccount = () => {
     near_village: ''
   });
 
+  const [userRole, setUserRole] = useState('');
+
   const [validated, setValidated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -69,19 +71,14 @@ const AddVendorAccount = () => {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   
-    if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
-      const valid = value.replace(/[^a-z ]/g, '');
-      setFormData(prev => ({ ...prev, [name]: valid }));
-      return;
-    }
   
     if (name === 'state') {
       const selected = locationData.find(s => s.state === value);
       const distList = selected?.districts.map(d => d.district) || [];
       setDistricts([...distList, 'Other']);
       setTehsils([]);
-      setVillages([]);
-      setFormData(prev => ({ ...prev, state: value, district: '', tehsil: '', near_village: '' }));
+    
+      setFormData(prev => ({ ...prev, state: value, district: '' }));
       setIsOtherDistrict(false);
       return;
     }
@@ -89,16 +86,16 @@ const AddVendorAccount = () => {
     if (name === 'district') {
       if (value === 'Other') {
         setIsOtherDistrict(true);
-        setFormData(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+        setFormData(prev => ({ ...prev, district: value }));
         setTehsils([]);
-        setVillages([]);
+        
       } else {
         const stateData = locationData.find(s => s.state === formData.state);
         const districtData = stateData?.districts.find(d => d.district === value);
         const tehsilList = districtData?.subDistricts.map(t => t.subDistrict) || [];
         setTehsils(tehsilList);
-        setVillages([]);
-        setFormData(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
+        
+        setFormData(prev => ({ ...prev, district: value }));
         setIsOtherDistrict(false);
       }
       return;
@@ -108,9 +105,9 @@ const AddVendorAccount = () => {
       const stateData = locationData.find(s => s.state === formData.state);
       const districtData = stateData?.districts.find(d => d.district === formData.district);
       const tehsilData = districtData?.subDistricts.find(t => t.subDistrict === value);
-      const villageList = tehsilData?.villages || [];
-      setVillages(villageList);
-      setFormData(prev => ({ ...prev, tehsil: value, near_village: '' }));
+          
+      
+      setFormData(prev => ({ ...prev, tehsil: value }));
       return;
     }
   
@@ -215,16 +212,16 @@ const AddVendorAccount = () => {
                 <Form.Control.Feedback type="invalid">Enter a valid 10-digit number.</Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group className="mb-3">
+              {/* <Form.Group className="mb-3">
                 <Form.Label className="fw-bold fs-5">Query License <span className="text-danger">*</span></Form.Label>
                 <Form.Control type="text" name="query_license" required value={formData.query_license} onChange={handleChange} placeholder="Enter query license"/>
                 <Form.Control.Feedback type="invalid">Query License is required.</Form.Control.Feedback>
-              </Form.Group>
+              </Form.Group> */}
 
-              <Form.Group className="mb-3">
+              {/* <Form.Group className="mb-3">
                 <Form.Label className="fw-bold fs-5">Mining License</Form.Label>
                 <Form.Control type="text" name="mining_license" value={formData.mining_license} onChange={handleChange} placeholder="Enter mining license"/>
-              </Form.Group>
+              </Form.Group> */}
             </Col>
 
             {/* Right Column */}
@@ -261,7 +258,7 @@ const AddVendorAccount = () => {
               </Form.Group>
 
               {/* Tehsil Field */}
-              <Form.Group className="mb-3">
+              {/* <Form.Group className="mb-3">
                 <Form.Label className="fw-bold fs-5">Tehsil</Form.Label>
                 {isOtherDistrict ? (
                   <Form.Control type="text" name="tehsil" placeholder="Enter tehsil" pattern="^[a-z ]+$" value={formData.tehsil} onChange={handleChange} />
@@ -271,10 +268,10 @@ const AddVendorAccount = () => {
                     {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
                   </Form.Select>
                 )}
-              </Form.Group>
+              </Form.Group> */}
 
               {/* Village Field */}
-              <Form.Group className="mb-3">
+              {/* <Form.Group className="mb-3">
                 <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
                 {isOtherDistrict ? (
                   <Form.Control type="text" name="near_village" placeholder="Enter village" pattern="^[a-z ]+$" required value={formData.near_village} onChange={handleChange} />
@@ -285,7 +282,13 @@ const AddVendorAccount = () => {
                   </Form.Select>
                 )}
                 <Form.Control.Feedback type="invalid">Nearby Village is required.</Form.Control.Feedback>
+              </Form.Group> */}
+
+<Form.Group className="mb-3">
+                <Form.Control type="text" name="near_village"  pattern="^[a-z ]+$" value={formData.near_village} onChange={handleChange} placeholder="Other Village" />
+      
               </Form.Group>
+
             </Col>
           </Row>
 

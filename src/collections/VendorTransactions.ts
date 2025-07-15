@@ -10,7 +10,7 @@ export const VendorTransactions: CollectionConfig = {
     read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager',
     create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
     update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
-    delete: ({ req: { user } }) => user?.role === 'admin' ,
+    delete: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
   },
   fields: [
     {
@@ -23,13 +23,13 @@ export const VendorTransactions: CollectionConfig = {
       name: 'query_license',
       type: 'relationship',
       relationTo: 'vendor',
-      required: true,
+
     },
     {
       name: 'near_village',
       type: 'relationship',
       relationTo: 'vendor',
-      required: true,
+  
     },
     {
       name: 'workingStage',
@@ -72,6 +72,12 @@ export const VendorTransactions: CollectionConfig = {
           type: 'text',
 
         },
+        {
+          name: "stageDate",
+          type: 'date',
+          
+          
+        }
       ],
     },
     {

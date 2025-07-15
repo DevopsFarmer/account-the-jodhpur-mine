@@ -12,7 +12,7 @@ export const ClientTransactions: CollectionConfig = {
     read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
     create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' || user?.role === 'guest',
     update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
-    delete: ({ req: { user } }) => user?.role === 'admin' ,
+    delete: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
   },
   hooks: {
     beforeChange: [
@@ -49,7 +49,6 @@ export const ClientTransactions: CollectionConfig = {
       name: 'query_license',
       type: 'relationship',
       relationTo: 'client-accounts',
-      required: true,
     },
     {
       name: 'state',

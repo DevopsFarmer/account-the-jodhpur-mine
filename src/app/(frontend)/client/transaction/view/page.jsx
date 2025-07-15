@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card, } from "react-bootstrap";
 
 import axios from "axios";
-import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle, } from "react-icons/fa";
+import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle,FaTrash } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 import { useRouter } from "next/navigation";
 
@@ -36,6 +36,7 @@ const ViewClientTransaction = () => {
   const [endDate, setEndDate] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(""); 
   const [isPdfLoading, setIsPdfLoading] = useState(false);
@@ -397,6 +398,39 @@ const downloadPDF = async () => {
     );
   }
 
+
+    const handleDelete = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.delete(`/api/client-transaction/${transactionToDelete.id}`);
+        if (response.status === 200) {
+          setAllTransactions(prev => prev.filter(txn => txn.id !== transactionToDelete.id));
+          setFilteredTransactions(prev => prev.filter(txn => txn.id !== transactionToDelete.id));
+          setShowDeleteModal(false);
+          setError("");
+          setTransactionToDelete(null);
+        }
+      } catch (err) {
+        console.error("Error deleting transaction:", err);
+        setError("Failed to delete transaction. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    const handleCancelDelete = () => {
+      setShowDeleteModal(false);
+      setTransactionToDelete(null);
+    };
+  
+    const confirmDelete = (txn) => {
+      setTransactionToDelete(txn);
+      setShowDeleteModal(true);
+    };
+  
+
+
+
   return (
     <>
       <Container className="mt-4 mb-5">
@@ -533,6 +567,25 @@ const downloadPDF = async () => {
               </div>
             )}
           </Modal.Body>
+        </Modal>
+
+        {/* Delete Modal */}
+        <Modal show={showDeleteModal} onHide={handleCancelDelete}>
+          <Modal.Header closeButton>
+            <Modal.Title>Delete Transaction</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>Are you sure you want to delete this transaction?</p>
+            <ul>
+              <li><strong>Client:</strong> {transactionToDelete?.clientName?.clientName}</li>
+              <li><strong>Query License:</strong> {transactionToDelete?.query_license?.query_license}</li>
+              <li><strong>Amount:</strong> ₹{transactionToDelete?.totalAmount}</li>
+            </ul>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCancelDelete}>Cancel</Button>
+            <Button variant="danger" onClick={handleDelete}>Delete</Button>
+          </Modal.Footer>
         </Modal>
       </Container>
     </>

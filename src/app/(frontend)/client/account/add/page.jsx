@@ -206,9 +206,9 @@ const AddClientAccount = ({ isGuest = false }) => {
               </Form.Group>
 
               <Form.Group className="mb-3">
-                <Form.Label className="fw-bold fs-5">Query License <span className="text-danger">*</span></Form.Label>
-                <Form.Control type="text" name="query_license" required value={formData.query_license} onChange={handleChange} placeholder="Enter query license"/>
-                <Form.Control.Feedback type="invalid">Query License is required.</Form.Control.Feedback>
+                <Form.Label className="fw-bold fs-5">Query License </Form.Label>
+                <Form.Control type="text" name="query_license" value={formData.query_license} onChange={handleChange} placeholder="Enter query license"/>
+                
               </Form.Group>
 
               <Form.Group className="mb-3">
