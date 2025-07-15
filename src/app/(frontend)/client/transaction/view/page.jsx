@@ -40,6 +40,7 @@ const ViewClientTransaction = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(""); 
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+const [transactionToDelete, setTransactionToDelete] = useState(null);
 
   const [paymentStatusLoadingId, setPaymentStatusLoadingId] = useState(null);
   const [workStatusLoadingId, setWorkStatusLoadingId] = useState(null); 
