@@ -9,7 +9,7 @@ export const ClientAccounts: CollectionConfig = {
   read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' || user?.role === 'guest',
     create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' || user?.role === 'guest',
     update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
-    delete: ({ req: { user } }) => user?.role === 'admin' ,
+    delete: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
   },
   fields: [
     {
@@ -25,7 +25,7 @@ export const ClientAccounts: CollectionConfig = {
     {
       name: 'query_license',
       type: 'text',
-      required: true,
+    
     },
     {
       name: 'mining_license',

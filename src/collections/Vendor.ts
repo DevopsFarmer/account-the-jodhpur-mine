@@ -9,7 +9,7 @@ export const Vendor: CollectionConfig = {
     read: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager',
     create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
     update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
-    delete: ({ req: { user } }) => user?.role === 'admin' ,
+    delete: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'manager' ,
   },
   fields: [
     {
@@ -25,7 +25,6 @@ export const Vendor: CollectionConfig = {
     {
       name: 'query_license',
       type: 'text',
-      required: true,
     },
     {
       name: 'mining_license',
@@ -35,7 +34,6 @@ export const Vendor: CollectionConfig = {
     {
       name: 'near_village',
       type: 'text',
-      required: true,
     },
     {
       name: 'tehsil',
