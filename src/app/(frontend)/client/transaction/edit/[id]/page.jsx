@@ -170,11 +170,11 @@ const EditClientTransaction = () => {
   };
 
   const addStage = () => {
-    setWorkingStages([...workingStages, { 
+    setWorkingStages([{ 
       workingStage: "", 
       workingDescription: "",
       workstatus: "incomplete" 
-    }]);
+    }, ...workingStages]);
   };
 
   const removeStage = (index) => {
@@ -191,11 +191,11 @@ const EditClientTransaction = () => {
   };
 
   const addStageClient = () => {
-    setWorkingStagesClient([...workingStagesClient, { 
+    setWorkingStagesClient([{ 
       workingStageclient: "", 
       workingDescriptionclient: "", 
       stageDate: ""
-    }]);
+    }, ...workingStagesClient]);
   };
 
   const removeStageClient = (index) => {

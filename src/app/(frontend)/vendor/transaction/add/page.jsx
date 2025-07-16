@@ -1,5 +1,3 @@
-
-
 'use client'; 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -124,18 +122,23 @@ const AddVendorTransaction = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const userData = localStorage.getItem('user');
-      let role = null;
+      let role = 'guest'; // Default to guest role
+      
       if (userData) {
         try {
           const parsedUser = JSON.parse(userData);
-          role = parsedUser.role;
-          setUserRole(role);
+          if (parsedUser && parsedUser.role) {
+            role = parsedUser.role;
+          }
         } catch (error) {
           console.error('Error parsing user data from localStorage:', error);
         }
       }
 
-      if (role !== 'admin' && role !== 'manager') {
+      setUserRole(role);
+
+      // Only redirect if user is not a guest, admin, or manager
+      if (role !== 'guest' && role !== 'admin' && role !== 'manager') {
         setTimeout(() => {
           localStorage.clear();
           window.location.href = '/api/logout';
@@ -565,7 +568,7 @@ const AddVendorTransaction = () => {
             <Card className="mb-4 border-0 shadow-sm">
               <Card.Header className="bg-primary text-white fw-bold fs-5 d-flex align-items-center justify-content-between">
                 <div>
-                  <FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" /> Our Working Stages (Our Costs)
+                  <FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" /> Vendor's Working Stages (Cost)
                 </div>
                 <Button
                   variant="light"
@@ -634,7 +637,7 @@ const AddVendorTransaction = () => {
             <Card className="mb-4 border-0 shadow-sm">
               <Card.Header className="bg-success text-white fw-bold fs-5 d-flex align-items-center justify-content-between">
                 <div>
-                  <FontAwesomeIcon icon={faMoneyCheckDollar} className="me-2" /> Vendor's Stages (Vendor Charges)
+                  <FontAwesomeIcon icon={faMoneyCheckDollar} className="me-2" /> Payment Stages 
                 </div>
                 <Button
                   variant="light"
