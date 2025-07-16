@@ -41,7 +41,7 @@ const Dashboard = () => {
       { icon: <FaWallet size={60} />, title: "Vendor Accounts", text: "Manage vendor accounts", path: "/vendor/account", bg: "bg-dark", textColor: "text-warning" },
     ],
     guest: [
-      { icon: <FaReceipt size={65} />, title: "Client Transaction", text: "Add a client transaction", path: "/client/transaction/add", bg: "bg-warning", textColor: "text-dark" },
+      { icon: <FaReceipt size={65} />, title: "Client Transaction", text: "Add a client transaction", path: "/client/transaction/add-voucher", bg: "bg-warning", textColor: "text-dark" },
       { icon: <FaWallet size={60} />, title: "Add Account", text: "Create a new account", path: "/client/account/add", bg: "bg-warning", textColor: "text-dark" },
     ],
   };

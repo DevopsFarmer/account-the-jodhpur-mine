@@ -70,8 +70,11 @@ const navItems = {
   ],
   guest: [
     {
-      title: "",
-      links: [{ label: "Add Client Transaction", href: "/client/transaction/add" }],
+      title: "Voucher Transactions",
+      links: [
+        { label: "Create Voucher", href: "/client/transaction/add-voucher" },
+        
+      ],
     },
   ],
 };
