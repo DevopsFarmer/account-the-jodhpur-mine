@@ -240,7 +240,8 @@ const AddVendorAccount = () => {
                 <Form.Label className="fw-bold fs-5">District <span className="text-danger">*</span></Form.Label>
                 {isOtherDistrict ? (
                   <div className="d-flex align-items-center gap-2">
-                    <Form.Control type="text" name="district" placeholder="Enter district" pattern="^[a-z ]+$" required value={formData.district} onChange={handleChange} />
+                    <Form.Control type="text" name="district" placeholder="Enter district" pattern="^[a-zA-Z ]+$
+" required value={formData.district} onChange={handleChange} />
                     <Button variant="outline-danger" onClick={() => {
                       setIsOtherDistrict(false);
                       setFormData({ ...formData, district: '', tehsil: '', near_village: '' });
@@ -285,7 +286,7 @@ const AddVendorAccount = () => {
               </Form.Group> */}
 
 <Form.Group className="mb-3">
-                <Form.Control type="text" name="near_village"  pattern="^[a-z ]+$" value={formData.near_village} onChange={handleChange} placeholder="Other Village" />
+                <Form.Control type="text" name="near_village" value={formData.near_village} onChange={handleChange} placeholder="Other Village" />
       
               </Form.Group>
 
