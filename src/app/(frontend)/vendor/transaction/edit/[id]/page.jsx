@@ -182,13 +182,13 @@ const EditVendorTransaction = () => {
     setWorkingStages(updated);
   };
 
-  // Add a new empty working stage row (Our Side)
+  // Add a new empty working stage row (Our Side) - NOW ADDS TO TOP
   const addStage = () => {
-    setWorkingStages([...workingStages, {
+    setWorkingStages([{
       workingStage: "",
       workingDescription: "",
       workstatus: "incomplete" // Default value
-    }]);
+    }, ...workingStages]); // New stage first, then existing stages
   };
 
   // Remove a working stage row (Our Side) by its index
@@ -206,13 +206,13 @@ const EditVendorTransaction = () => {
     setWorkingStagesVendor(updated);
   };
 
-  // Add a new empty working stage row (Vendor Side)
+  // Add a new empty working stage row (Vendor Side) - NOW ADDS TO TOP
   const addStageVendor = () => {
-    setWorkingStagesVendor([...workingStagesVendor, {
+    setWorkingStagesVendor([{
       workingStagevendor: "",
       workingDescriptionvendor: "",
       stageDate: ""
-    }]);
+    }, ...workingStagesVendor]); // New stage first, then existing stages
   };
 
   // Remove a working stage row (Vendor Side) by its index
