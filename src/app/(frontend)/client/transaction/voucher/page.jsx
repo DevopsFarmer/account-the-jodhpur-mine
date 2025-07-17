@@ -247,9 +247,17 @@ const VoucherClientTransaction = () => {
         ["Mobile", selectedTransaction.clientMobile || "N/A"],
         ["Voucher No", selectedTransaction.voucherNo || "N/A"],
         ["Mining License", selectedTransaction.query_license?.query_license || "N/A"],
-        ["Village", selectedTransaction.near_village?.near_village || "N/A"],
+        
         ["Created At", `${formatDate(selectedTransaction.clientCreatedAt)} ${formatTime(selectedTransaction.clientCreatedAt)}`]
+
       ];
+      // In the downloadPDF function, replace the Village row with:
+["Complete Location", [
+  selectedTransaction.state?.state || 'N/A',
+  selectedTransaction.district?.district || 'N/A', 
+  selectedTransaction.tehsil?.tehsil || 'N/A',
+  selectedTransaction.near_village?.near_village || 'N/A'
+].join(' • ')]
       doc.autoTable({
         startY,
         body: clientInfo,
@@ -358,48 +366,78 @@ const VoucherClientTransaction = () => {
 
         {renderPagination()}
 
-        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered scrollable>
-          <Modal.Header closeButton className="bg-dark text-white">
-            <Modal.Title className="d-flex align-items-center"><FaClipboard className="me-2" />Voucher Details</Modal.Title>
-            <Button variant="outline-light" size="sm" className="ms-auto" onClick={downloadPDF} disabled={isPdfLoading}>{isPdfLoading ? <Spinner animation="border" size="sm" /> : <><FaFilePdf className="me-1" /> Download PDF</>}</Button>
-          </Modal.Header>
-          <Modal.Body className="bg-light p-4">
-            {selectedTransaction && (
-              <>
-                <Card className="mb-4 shadow-sm">
-                  <Card.Body>
-                    <div className="d-flex justify-content-between align-items-start mb-3">
-                      <div>
-                        <h5 className="card-title text-primary mb-1"><FaUser className="me-2" />{selectedTransaction.clientName?.clientName || "N/A"}</h5>
-                        <div className="text-muted small"><FaPhoneAlt className="me-1" /> {selectedTransaction.clientMobile || 'N/A'}</div>
-                      </div>
-                      <div className="text-end">
-                        <div className="text-muted small">Mining License</div>
-                        <div className="fw-bold">{selectedTransaction.query_license?.query_license || 'N/A'}</div>
-                      </div>
-                    </div>
-                    <hr/>
-                    <Row className="gy-3">
-                      <Col xs={12} sm={6} md={4} className="d-flex align-items-center"><FaHashtag className="text-secondary me-2 fs-5"/><div><div className="text-muted small">Voucher No</div><div className="fw-bold">{selectedTransaction.voucherNo || 'N/A'}</div></div></Col>
-                      <Col xs={12} sm={6} md={4} className="d-flex align-items-center"><FaHome className="text-secondary me-2 fs-5"/><div><div className="text-muted small">Village</div><div className="fw-bold">{selectedTransaction.near_village?.near_village || 'N/A'}</div></div></Col>
-                      <Col xs={12} sm={6} md={4}><div className="text-muted small">Created Date</div><div className="fw-bold">{formatDate(selectedTransaction.clientCreatedAt)}</div></Col>
-                      <Col xs={12} sm={6}><div className="text-muted small">Payment Status</div><Badge bg={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"} className="p-2 fs-6">{selectedTransaction.paymentstatus}</Badge></Col>
-                    </Row>
-                  </Card.Body>
-                </Card>
-                <Card><Card.Header className="fw-bold">Transaction Summary</Card.Header><Card.Body>
-                    <h6 className="text-secondary mb-3"><FaWrench className="me-2"/>Work Stage</h6>
-                    <Table bordered responsive>
-                      <thead className="table-light"><tr><th>Work Description</th><th>Amount (₹)</th><th>Status</th></tr></thead>
-                      <tbody>{selectedTransaction.workingStage?.map((stage, index) => (<tr key={index}><td>{stage.workingStage || "N/A"}</td><td className="text-end">{parseFloat(stage.workingDescription)?.toFixed(2) || '0.00'}</td><td className="text-center"><Button variant={stage.workstatus === "incomplete" ? "danger" : "success"} size="sm" className="rounded-pill text-capitalize fw-bold" style={{minWidth: '120px'}} onClick={() => toggleWorkStatus(selectedTransaction.id, index)} disabled={workStatusLoadingId?.transactionId === selectedTransaction.id}>{workStatusLoadingId?.transactionId === selectedTransaction.id && workStatusLoadingId?.stageIndex === index ? <Spinner size="sm" /> : <>{stage.workstatus === "incomplete" ? <FaTimesCircle className="me-1"/> : <FaCheckCircle className="me-1"/>} {stage.workstatus}</>}</Button></td></tr>))}</tbody>
-                    </Table>
-                    <div className="text-end bg-white p-3 rounded mt-3 border"><span className="fw-bold text-dark me-2">TOTAL AMOUNT:</span><span className="fs-4 fw-bolder text-danger"><FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2) || '0.00'}</span></div>
-                    {selectedTransaction.description && (<div className="mt-3"><strong className="text-muted">Notes:</strong><p className="border-start border-3 border-secondary ps-2 fst-italic bg-white p-2 rounded">{selectedTransaction.description}</p></div>)}
-                </Card.Body></Card>
-              </>
-            )}
-          </Modal.Body>
-        </Modal>
+        // Replace the existing Modal section in your VoucherClientTransaction component with this updated version
+
+<Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered scrollable>
+  <Modal.Header closeButton className="bg-dark text-white">
+    <Modal.Title className="d-flex align-items-center"><FaClipboard className="me-2" />Voucher Details</Modal.Title>
+    <Button variant="outline-light" size="sm" className="ms-auto" onClick={downloadPDF} disabled={isPdfLoading}>{isPdfLoading ? <Spinner animation="border" size="sm" /> : <><FaFilePdf className="me-1" /> Download PDF</>}</Button>
+  </Modal.Header>
+  <Modal.Body className="bg-light p-4">
+    {selectedTransaction && (
+      <>
+        <Card className="mb-4 shadow-sm">
+          <Card.Body>
+            <div className="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h5 className="card-title text-primary mb-1"><FaUser className="me-2" />{selectedTransaction.clientName?.clientName || "N/A"}</h5>
+                <div className="text-muted small"><FaPhoneAlt className="me-1" /> {selectedTransaction.clientMobile || 'N/A'}</div>
+              </div>
+              <div className="text-end">
+                <div className="text-muted small">Mining License</div>
+                <div className="fw-bold">{selectedTransaction.query_license?.query_license || 'N/A'}</div>
+              </div>
+            </div>
+            <hr/>
+            <Row className="gy-3">
+              <Col xs={12} sm={6} md={4} className="d-flex align-items-center">
+                <FaHashtag className="text-secondary me-2 fs-5"/>
+                <div>
+                  <div className="text-muted small">Voucher No</div>
+                  <div className="fw-bold">{selectedTransaction.voucherNo || 'N/A'}</div>
+                </div>
+              </Col>
+              <Col xs={12} className="d-flex align-items-center">
+                <FaMapMarkerAlt className="text-secondary me-2 fs-5"/>
+                <div>
+                  <div className="text-muted small">Complete Location</div>
+                  <div className="fw-bold">
+                    {[
+                      selectedTransaction.state?.state || 'N/A',
+                      selectedTransaction.district?.district || 'N/A', 
+                      selectedTransaction.tehsil?.tehsil || 'N/A',
+                      selectedTransaction.near_village?.near_village || 'N/A'
+                    ].join(' • ')}
+                  </div>
+                </div>
+              </Col>
+              <Col xs={12} sm={6} md={4}>
+                <div className="text-muted small">Created Date</div>
+                <div className="fw-bold">{formatDate(selectedTransaction.clientCreatedAt)}</div>
+              </Col>
+              <Col xs={12} sm={6}>
+                <div className="text-muted small">Payment Status</div>
+                <Badge bg={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"} className="p-2 fs-6">{selectedTransaction.paymentstatus}</Badge>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+        <Card>
+          <Card.Header className="fw-bold">Transaction Summary</Card.Header>
+          <Card.Body>
+            <h6 className="text-secondary mb-3"><FaWrench className="me-2"/>Work Stage</h6>
+            <Table bordered responsive>
+              <thead className="table-light"><tr><th>Work Description</th><th>Amount (₹)</th><th>Status</th></tr></thead>
+              <tbody>{selectedTransaction.workingStage?.map((stage, index) => (<tr key={index}><td>{stage.workingStage || "N/A"}</td><td className="text-end">{parseFloat(stage.workingDescription)?.toFixed(2) || '0.00'}</td><td className="text-center"><Button variant={stage.workstatus === "incomplete" ? "danger" : "success"} size="sm" className="rounded-pill text-capitalize fw-bold" style={{minWidth: '120px'}} onClick={() => toggleWorkStatus(selectedTransaction.id, index)} disabled={workStatusLoadingId?.transactionId === selectedTransaction.id}>{workStatusLoadingId?.transactionId === selectedTransaction.id && workStatusLoadingId?.stageIndex === index ? <Spinner size="sm" /> : <>{stage.workstatus === "incomplete" ? <FaTimesCircle className="me-1"/> : <FaCheckCircle className="me-1"/>} {stage.workstatus}</>}</Button></td></tr>))}</tbody>
+            </Table>
+            <div className="text-end bg-white p-3 rounded mt-3 border"><span className="fw-bold text-dark me-2">TOTAL AMOUNT:</span><span className="fs-4 fw-bolder text-danger"><FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2) || '0.00'}</span></div>
+            {selectedTransaction.description && (<div className="mt-3"><strong className="text-muted">Notes:</strong><p className="border-start border-3 border-secondary ps-2 fst-italic bg-white p-2 rounded">{selectedTransaction.description}</p></div>)}
+          </Card.Body>
+        </Card>
+      </>
+    )}
+  </Modal.Body>
+</Modal>
       </Container>
     </>
   );

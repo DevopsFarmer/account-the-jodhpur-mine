@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Container, Form, Button, Row, Col, Alert, Spinner } from "react-bootstrap";
 import { TbTransactionRupee, TbPlus } from "react-icons/tb";
 import { FaSave, FaExclamationTriangle } from "react-icons/fa";
@@ -31,11 +31,13 @@ const formatTime = (dateString) => {
 const EditClientTransaction = () => {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const transactionId = params.id; 
 
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true); 
-  const [submitting, setSubmitting] = useState(false); 
+  const [submitting, setSubmitting] = useState(false);
+  const [referringPage, setReferringPage] = useState('/client/transaction/view');
 
   const [form, setForm] = useState({
     clientName: "", 
@@ -69,7 +71,38 @@ const EditClientTransaction = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-    // 1. Client-Side Access Control
+  // 1. Initialize referring page tracking
+  useEffect(() => {
+    // Check URL parameters for referring page
+    const from = searchParams.get('from');
+    const referer = searchParams.get('referer');
+    
+    if (from) {
+      setReferringPage(from);
+    } else if (referer) {
+      setReferringPage(referer);
+    } else {
+      // Check document.referrer for fallback
+      if (typeof window !== "undefined" && document.referrer) {
+        const referrerUrl = new URL(document.referrer);
+        const referrerPath = referrerUrl.pathname;
+        
+        // Detect specific pages
+        if (referrerPath.includes('/client/transaction/view')) {
+          setReferringPage('/client/transaction/view');
+        } else if (referrerPath.includes('/voucher')) {
+          setReferringPage('/voucher');
+        } else if (referrerPath.includes('/client/transaction/voucher')) {
+          setReferringPage('/client/transaction/voucher');
+        } else {
+          // Default fallback
+          setReferringPage('/client/transaction/view');
+        }
+      }
+    }
+  }, [searchParams]);
+
+  // 2. Client-Side Access Control
   useEffect(() => {
     if (typeof window !== "undefined") {
       const userData = localStorage.getItem("user");
@@ -94,7 +127,7 @@ const EditClientTransaction = () => {
     }
   }, [router]);
 
-  // 2. Fetch existing transaction data
+  // 3. Fetch existing transaction data
   useEffect(() => {
     // Only proceed to fetch data if transactionId exists and userRole is determined to be authorized
     if (transactionId && (userRole === 'admin' || userRole === 'manager')) {
@@ -102,7 +135,7 @@ const EditClientTransaction = () => {
         try {
           const res = await fetch(`/api/client-transaction/${transactionId}`);
           const data = await res.json();
-          console.log(data.workingStageclient[0].stageDate);
+          console.log(data.workingStageclient?.[0]?.stageDate);
           if (res.ok) {
             setForm({
               clientName: data.clientName?.clientName || "",
@@ -209,6 +242,7 @@ const EditClientTransaction = () => {
     const workTotal = workingStages.reduce((sum, s) => sum + (parseFloat(s.workingDescription) || 0), 0);
     return workTotal;
   };
+  
   const getTotalAmountClient = () => {
     const workTotalClient = workingStagesClient.reduce((sum, s) => sum + (parseFloat(s.workingDescriptionclient) || 0), 0);
     return workTotalClient;
@@ -218,11 +252,29 @@ const EditClientTransaction = () => {
     return getTotalAmount() - getTotalAmountClient();
   };
 
+  // Helper function to filter out empty client stages
+  const getValidClientStages = () => {
+    return workingStagesClient.filter(stage => 
+      stage.workingStageclient.trim() !== '' || 
+      stage.workingDescriptionclient.trim() !== '' || 
+      stage.stageDate.trim() !== ''
+    );
+  };
+
+  // Helper function to handle back navigation
+  const handleGoBack = () => {
+    console.log(`Navigating back to: ${referringPage}`);
+    router.push(referringPage);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     setSuccess("");
+
+    // Filter out completely empty client stages
+    const validClientStages = getValidClientStages();
 
     const payload = {
       clientName: clientId,
@@ -235,16 +287,16 @@ const EditClientTransaction = () => {
       totalAmountclient: getTotalAmountClient(),
       remainingAmount: getRemainingAmount(),
       workingStage: workingStages.map((s) => ({
-        workingStage: s.workingStage,
-        workingDescription: s.workingDescription,
-        workstatus: s.workstatus
+        workingStage: s.workingStage || '',
+        workingDescription: s.workingDescription || '',
+        workstatus: s.workstatus || 'incomplete'
       })),
-      workingStageclient: workingStagesClient.map((s) => ({
-        workingStageclient: s.workingStageclient,
-        workingDescriptionclient: s.workingDescriptionclient,
-        stageDate: s.stageDate
+      workingStageclient: validClientStages.map((s) => ({
+        workingStageclient: s.workingStageclient || '',
+        workingDescriptionclient: s.workingDescriptionclient || '',
+        stageDate: s.stageDate || ''
       })),
-      description: form.description,
+      description: form.description || '',
     };
 
     try {
@@ -258,7 +310,9 @@ const EditClientTransaction = () => {
         setSuccess("Client transaction updated successfully!");
         setTimeout(() => {
           setSuccess("");
-          router.push("/client/transaction/view");
+          // Redirect based on referring page
+          console.log(`Redirecting to: ${referringPage}`);
+          router.push(referringPage);
         }, 1000);
       } else {
         const errData = await res.json();
@@ -297,7 +351,6 @@ const EditClientTransaction = () => {
 
   return (
     <>
-     
       <Container className="mt-3 px-3 px-sm-4 py-4 bg-light rounded-4 shadow-sm w-100 w-md-75 mx-auto">
         <h4 className="text-center mb-4 fs-4 fw-bold text-danger">
           <TbTransactionRupee className="fs-1 mb-1" /> Edit Client Transaction
@@ -414,26 +467,26 @@ const EditClientTransaction = () => {
           <div className="d-flex justify-content-between align-items-center my-4">
             <h5 className="fw-bold text-dark fs-5">
               <FontAwesomeIcon icon={faMoneyCheckDollar} className="me-2" />
-              Client Working Stages
+              Client Working Stages (Optional)
             </h5>
             <Button variant="primary" onClick={addStageClient} className="w-25 fs-6 fw-bold text-white text-capitalize text-center justify-content-center align-items-center d-flex gap-1">
               <TbPlus className="me-1 fw-bold fs-5" size={35} /> Add Stage
             </Button>
           </div>
 
-          {workingStagesClient.map((stage, index) => (
+          {workingStagesClient?.map((stage, index) => (
             <Row key={`client-stage-${index}`} className="my-2 align-items-center">
               <Col sm={5} className="pb-3 pb-md-0">
                 <Form.Control
-                  placeholder="Client Work Description"
+                  placeholder="Client Work Description (Optional)"
                   value={stage.workingStageclient}
                   onChange={(e) => updateStageClient(index, 'workingStageclient', e.target.value)}
                 />
               </Col>
-              <Col sm={4} className="pb-3 pb-md-0">
+              <Col sm={3} className="pb-3 pb-md-0">
                 <Form.Control
                   type="text"
-                  placeholder="Work Details/Amount"
+                  placeholder="Work Details/Amount (Optional)"
                   value={stage.workingDescriptionclient}
                   onChange={(e) => updateStageClient(index, 'workingDescriptionclient', e.target.value)}
                 />
@@ -441,15 +494,19 @@ const EditClientTransaction = () => {
               <Col sm={2} className="pb-3 pb-md-0">
                 <Form.Control
                   type="date"
-                  placeholder="Stage Date"
-                  value={stage.stageDate ? new Date(stage.stageDate).toISOString().split('T')[0] : ''}
+                  placeholder="Stage Date (Optional)"
+                  value={stage?.stageDate ? new Date(stage.stageDate).toISOString().split('T')[0] : ''}
                   onChange={(e) => updateStageClient(index, 'stageDate', e.target.value)}
                   className="p-2"
-                  required
                 />
               </Col>
-              <Col sm={3} className="pb-3 pb-md-0">
-                <Button variant="danger" onClick={() => removeStageClient(index)} disabled={workingStagesClient.length === 1} className="w-75 fw-bold text-white">
+              <Col sm={2} className="pb-3 pb-md-0">
+                <Button 
+                  variant="danger" 
+                  onClick={() => removeStageClient(index)} 
+                  disabled={workingStagesClient.length === 1} 
+                  className="w-100 fw-bold text-white"
+                >
                   Remove
                 </Button>
               </Col>
@@ -458,22 +515,11 @@ const EditClientTransaction = () => {
 
           {/* Calculated Totals: Read-only fields */}
           <Row className="my-4">
-            {/* <Col sm={6} className="pb-3 pb-md-0">
-              <Form.Label className="fw-bold fs-5">Total Amount (Our Side) (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
-              <Form.Control value={getTotalAmount().toFixed(2)} readOnly className="bg-white" />
-            </Col> */}
             <Col sm={6} className="pb-3 pb-md-0">
               <Form.Label className="fw-bold fs-5">Total Amount (Client Side) (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
               <Form.Control value={getTotalAmountClient().toFixed(2)} readOnly className="bg-white" />
             </Col>
           </Row>
-
-          {/* <Row className="my-4">
-            <Col sm={12} className="pb-3 pb-md-0">
-              <Form.Label className="fw-bold fs-5">Remaining Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
-              <Form.Control value={getRemainingAmount().toFixed(2)} readOnly className="bg-white" />
-            </Col>
-          </Row> */}
 
           {/* Description Textarea */}
           <Form.Group className="my-4">
@@ -510,7 +556,7 @@ const EditClientTransaction = () => {
             <Button
               variant="secondary"
               className="px-4 fw-bold rounded-3"
-              onClick={() => router.push("/client/transaction/view")}
+              onClick={handleGoBack}
             >
               Go Back
             </Button>

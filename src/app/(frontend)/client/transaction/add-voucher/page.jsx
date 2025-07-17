@@ -8,10 +8,10 @@ import { Container, Form, Button, Row, Col, Alert, Spinner, Card, Badge } from '
 import locationData from '../../../India-state-city-subDistrict-village.json'; 
 
 // Import icons
-import { TbTransactionRupee, TbCreditCard } from 'react-icons/tb';
+import { TbTransactionRupee, TbCreditCard, TbPlus } from 'react-icons/tb';
 import { FaSave, FaExclamationTriangle, FaUserTie, FaCoins, FaPencilAlt, FaUndo, FaClock } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faIndianRupeeSign, faScrewdriverWrench } from '@fortawesome/free-solid-svg-icons';
+import { faIndianRupeeSign, faScrewdriverWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 // Main functional component for adding a client voucher
 const AddClientVoucher = () => {
@@ -41,10 +41,12 @@ const AddClientVoucher = () => {
     description: '',
   });
 
-  const [voucherDetails, setVoucherDetails] = useState({
+  // 1. State for managing dynamic working stages
+  const [workingStages, setWorkingStages] = useState([{
     workDescription: '',
     amount: '',
-  });
+    workstatus: 'incomplete'
+  }]);
 
   // Initialize states from location data
   useEffect(() => {
@@ -57,7 +59,7 @@ const AddClientVoucher = () => {
     const { name, value } = e.target;
     
     if (['district', 'tehsil', 'near_village'].includes(name) && isOtherDistrict) {
-      setForm(prev => ({ ...prev, [name]: value.replace(/[^a-z ]/gi, '') }));
+      setForm(prev => ({ ...prev, [name]: value }));
       return;
     }
 
@@ -68,29 +70,22 @@ const AddClientVoucher = () => {
       setVillages([]);
       setForm(prev => ({ ...prev, state: value, district: '', tehsil: '', near_village: '' }));
       setIsOtherDistrict(false);
-      return;
-    }
-
-    if (name === 'district') {
+    } else if (name === 'district') {
       const stateData = locationData.find(s => s.state === form.state);
       const districtData = stateData?.districts.find(d => d.district === value);
       setTehsils(districtData?.subDistricts.map(t => t.subDistrict) || []);
       setVillages([]);
       setForm(prev => ({ ...prev, district: value, tehsil: '', near_village: '' }));
       setIsOtherDistrict(false);
-      return;
-    }
-
-    if (name === 'tehsil') {
+    } else if (name === 'tehsil') {
       const stateData = locationData.find(s => s.state === form.state);
       const districtData = stateData?.districts.find(d => d.district === form.district);
       const tehsilData = districtData?.subDistricts.find(t => t.subDistrict === value);
       setVillages(tehsilData?.villages || []);
       setForm(prev => ({ ...prev, tehsil: value, near_village: '' }));
-      return;
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
     }
-
-    setForm(prev => ({ ...prev, [name]: value }));
   };
   
   // Handle general form changes
@@ -104,9 +99,21 @@ const AddClientVoucher = () => {
     }
   };
   
-  // Handle changes in voucher details section
-  const updateVoucherDetails = (field, value) => {
-    setVoucherDetails(prev => ({ ...prev, [field]: value }));
+  // 2. Functions to manage dynamic stages
+  const addStage = () => {
+    setWorkingStages(prev => [{ workDescription: '', amount: '', workstatus: 'incomplete' }, ...prev]);
+  };
+
+  const removeStage = (index) => {
+    if (workingStages.length > 1) {
+      setWorkingStages(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateStage = (index, field, value) => {
+    const updated = [...workingStages];
+    updated[index] = { ...updated[index], [field]: value };
+    setWorkingStages(updated);
   };
 
   // Autocomplete helpers
@@ -125,7 +132,7 @@ const AddClientVoucher = () => {
     } else {
       fetchClients();
     }
-  }, []);
+  }, [router]);
 
   const fetchClients = async () => {
     setLoadingClients(true);
@@ -144,11 +151,13 @@ const AddClientVoucher = () => {
   };
 
   // Calculation & Reset
-  const getTotalAmount = () => parseFloat(voucherDetails.amount) || 0;
+  const getTotalAmount = () => {
+    return workingStages.reduce((total, stage) => total + (parseFloat(stage.amount) || 0), 0);
+  };
 
   const handleReset = () => {
     setForm({ clientName: '', query_license: '', state: '', district: '', tehsil: '', near_village: '', description: '' });
-    setVoucherDetails({ workDescription: '', amount: '' });
+    setWorkingStages([{ workDescription: '', amount: '', workstatus: 'incomplete' }]);
     setError('');
     setSuccess('');
     setIsOtherDistrict(false);
@@ -157,7 +166,7 @@ const AddClientVoucher = () => {
     setVillages([]);
   };
 
-  // --- Form Submission Handler (Updated as per your request) ---
+  // --- Form Submission Handler ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -168,12 +177,13 @@ const AddClientVoucher = () => {
       return;
     }
 
-    if (!voucherDetails.workDescription || !voucherDetails.amount || getTotalAmount() <= 0) {
-      setError("Please provide a valid Work Description and Amount.");
-      return;
+    // 4. Update validation logic for dynamic stages
+    const validStages = workingStages.filter(stage => stage.workDescription.trim() !== '' && (parseFloat(stage.amount) || 0) > 0);
+    if (validStages.length === 0) {
+        setError("Please add at least one valid work stage with a description and an amount greater than zero.");
+        return;
     }
   
-    // More robust client matching to prevent associating data with the wrong client
     const matchedClient = clients.find((client) => 
       client.clientName === form.clientName &&
       client.state === form.state &&
@@ -193,7 +203,7 @@ const AddClientVoucher = () => {
     const now = new Date();
     const totalAmount = getTotalAmount();
   
-    // Payload formatted for the 'client-transaction' endpoint
+    // 4. Update payload to send the array of working stages
     const payload = {
       clientName: matchedClient.id,
       query_license: matchedClient.id,
@@ -201,18 +211,18 @@ const AddClientVoucher = () => {
       district: matchedClient.id,
       tehsil: matchedClient.id,
       near_village: matchedClient.id,
-      workingStage: [{
-        workingStage: voucherDetails.workDescription,
-        workingDescription: voucherDetails.amount.toString(),
+      workingStage: validStages.map(stage => ({
+        workingStage: stage.workDescription,
+        workingDescription: stage.amount.toString(),
         workstatus: 'incomplete'
-      }],
+      })),
       workingStageclient: [],
       totalAmount: totalAmount,
       totalAmountclient: 0,
-      remainingAmount: totalAmount, // Correctly calculate remaining amount
+      remainingAmount: totalAmount,
       description: form.description || '',
       paymentstatus: 'pending',
-      source: userRole, // Use dynamic user role
+      source: userRole,
       clientCreatedAt: now.toISOString(),
       clientUpdatedAt: now.toISOString()
     };
@@ -237,11 +247,10 @@ const AddClientVoucher = () => {
         throw new Error(errorMessage);
       }
   
-      // In the success part of handleSubmit:
-setSuccess("Voucher created successfully!");
-setTimeout(() => {
-  router.push("/"); // Changed from "/dashboard" to "/"
-}, 1000);
+      setSuccess("Voucher created successfully!");
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
   
     } catch (err) {
       console.error("Error:", err);
@@ -251,7 +260,6 @@ setTimeout(() => {
     }
   };
   
-
   // Conditional Rendering
   if (userRole === null) return <div className="text-center mt-5"><Spinner animation="border" /></div>;
   if (!['admin', 'manager', 'guest'].includes(userRole)) {
@@ -273,155 +281,129 @@ setTimeout(() => {
 
       {!loadingClients && (
         <Form onSubmit={handleSubmit}>
-          {/* Client Details Section */}
           <Card className="mb-4 border-0 shadow-sm">
             <Card.Header className="bg-warning text-dark fw-bold fs-5"><FaUserTie /> Client Details</Card.Header>
              <Card.Body>
-                            <Row>
-                              <Col md={12} className="mb-3">
-                                <Form.Group>
-                                  <Form.Label className="fw-bold fs-5">
-                                    Client Name <span className="text-danger">*</span>
-                                  </Form.Label>
-                                  <Form.Control
-                                    list="client-options"
-                                    name="clientName"
-                                    value={form.clientName}
-                                    onChange={handleFormChange}
-                                    placeholder="Select or type Client Name"
-                                    required
-                                    className="p-2"
-                                  />
-                                  {form.clientName.length >= 2 && (
-                                    <datalist id="client-options">
-                                      {getUniqueClientNames()
-                                        .filter(name => name.toLowerCase().includes(form.clientName.toLowerCase()))
-                                        .slice(0, 10)
-                                        .map((clientName, index) => (
-                                          <option key={`client-${index}`} value={clientName} />
-                                        ))}
-                                    </datalist>
-                                  )}
-                                </Form.Group>
-                            
-                                <Form.Group>
-                                  <Form.Label className="fw-bold fs-5">
-                                    <TbCreditCard className="me-1" /> Query License
-                                    
-                                  </Form.Label>
-                                  <Form.Control
-                                    list="query-license-options"
-                                    name="query_license"
-                                    value={form.query_license}
-                                    onChange={handleFormChange}
-                                    placeholder="Select or type Query License"
-                                    
-                                    className="p-2"
-                                  />
-                                  {form.query_license.length >= 2 && (
-                                    <datalist id="query-license-options">
-                                      {getUniqueQueryLicenses()
-                                        .filter(license =>
-                                          license.toLowerCase().includes(form.query_license.toLowerCase())
-                                        )
-                                        .slice(0, 10)
-                                        .map((license, index) => (
-                                          <option key={`license-${index}`} value={license} />
-                                        ))}
-                                    </datalist>
-                                  )}
-                                </Form.Group>
-                           
-                                <Row>
-                                  <Col md={6}>
-                                    <Form.Group className="mb-3">
-                                      <Form.Label className="fw-bold fs-5">State <span className="text-danger">*</span></Form.Label>
-                                      <Form.Select name="state" value={form.state} onChange={handleLocationChange} required>
-                                        <option value="">-- Select State --</option>
-                                        {states.map(s => <option key={s} value={s}>{s}</option>)}
-                                      </Form.Select>
-                                      <Form.Control.Feedback type="invalid">State is required.</Form.Control.Feedback>
-                                    </Form.Group>
-                                  </Col>
-                                  <Col md={6}>
-                                    <Form.Group className="mb-3">
-                                      <Form.Label className="fw-bold fs-5">District <span className="text-danger">*</span></Form.Label>
-                                      {isOtherDistrict ? (
-                                        <div className="d-flex align-items-center gap-2">
-                                          <Form.Control type="text" name="district" placeholder="Enter district" pattern="^[a-z ]+$" required value={form.district} onChange={handleChange} />
-                                          <Button variant="outline-danger" onClick={() => { setIsOtherDistrict(false); setForm({ ...form, district: '', tehsil: '', near_village: '' }); }}>
-                                            <FaXmark size={20} className="text-center fw-bold fs-5"/>
-                                          </Button>
-                                        </div>
-                                      ) : (
-                                        <Form.Select name="district" value={form.district} onChange={handleLocationChange} required>
-                                          <option value="">-- Select District --</option>
-                                          {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                                        </Form.Select>
-                                      )}
-                                      <Form.Control.Feedback type="invalid">District is required.</Form.Control.Feedback>
-                                    </Form.Group>
-                                  </Col>
-                                </Row>
-                                <Row>
-                                  <Col md={6}>
-                                    <Form.Group className="mb-3">
-                                      <Form.Label className="fw-bold fs-5">Tehsil <span className="text-danger">*</span></Form.Label>
-                                      {isOtherDistrict ? (
-                                        <Form.Control type="text" name="tehsil" placeholder="Enter tehsil" pattern="^[a-z ]+$" required value={form.tehsil} onChange={handleFormChange} />
-                                      ) : (
-                                        <Form.Select name="tehsil" value={form.tehsil} onChange={handleLocationChange} required>
-                                          <option value="">-- Select Tehsil --</option>
-                                          {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </Form.Select>
-                                      )}
-                                      <Form.Control.Feedback type="invalid">Tehsil is required.</Form.Control.Feedback>
-                                    </Form.Group>
-                                  </Col>
-                                  <Col md={6}>
-                                    <Form.Group className="mb-3">
-                                      <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
-                                      {isOtherDistrict ? (
-                                        <Form.Control type="text" name="near_village" placeholder="Enter village" pattern="^[a-z ]+$" required value={form.near_village} onChange={handleFormChange} />
-                                      ) : (
-                                        <Form.Select name="near_village" value={form.near_village} onChange={handleLocationChange} required>
-                                          <option value="">-- Select Village --</option>
-                                          {villages.map(v => <option key={v} value={v}>{v}</option>)}
-                                        </Form.Select>
-                                      )}
-                                      <Form.Control.Feedback type="invalid">Nearby Village is required.</Form.Control.Feedback>
-                                    </Form.Group>
-                                  </Col>
-                                </Row>
-                              </Col>
-                            </Row>
-                          </Card.Body>
-          </Card>
-
-          {/* Our Working Stages Section */}
-          <Card className="mb-4 border-0 shadow-sm">
-            <Card.Header className="bg-primary text-white fw-bold fs-5"><FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" /> Our Working Stages</Card.Header>
-            <Card.Body>
-              <div className="p-3 border rounded bg-light">
-                <Row className="align-items-end g-3">
-                  <Col xs={12} md={5}>
-                    <Form.Label className="fw-bold">Work Description <span className="text-danger">*</span></Form.Label>
-                    <Form.Control type="text" value={voucherDetails.workDescription} onChange={e => updateVoucherDetails('workDescription', e.target.value)} placeholder="Enter work stage" required />
-                  </Col>
-                  <Col xs={12} md={4}>
-                    <Form.Label className="fw-bold">Amount <span className="text-danger">*</span></Form.Label>
-                    <Form.Control type="number" min="0" value={voucherDetails.amount} onChange={e => updateVoucherDetails('amount', e.target.value)} placeholder="Enter amount" required />
-                  </Col>
-                  <Col xs={12} md={3}>
-                    <Form.Label className="fw-bold">Work Status</Form.Label>
-                    <div><Badge bg="warning" className="p-2 fs-6"><FaClock className="me-1" /> Incomplete</Badge></div>
+                <Row>
+                  <Col md={12} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="fw-bold fs-5">Client Name <span className="text-danger">*</span></Form.Label>
+                      <Form.Control list="client-options" name="clientName" value={form.clientName} onChange={handleFormChange} placeholder="Select or type Client Name" required className="p-2" />
+                      {form.clientName.length >= 2 && (
+                        <datalist id="client-options">
+                          {getUniqueClientNames().filter(name => name.toLowerCase().includes(form.clientName.toLowerCase())).slice(0, 10).map((clientName, index) => (<option key={`client-${index}`} value={clientName} />))}
+                        </datalist>
+                      )}
+                    </Form.Group>
+                
+                    <Form.Group>
+                      <Form.Label className="fw-bold fs-5"><TbCreditCard className="me-1" /> Query License</Form.Label>
+                      <Form.Control list="query-license-options" name="query_license" value={form.query_license} onChange={handleFormChange} placeholder="Select or type Query License" className="p-2" />
+                      {form.query_license.length >= 2 && (
+                        <datalist id="query-license-options">
+                          {getUniqueQueryLicenses().filter(license => license.toLowerCase().includes(form.query_license.toLowerCase())).slice(0, 10).map((license, index) => (<option key={`license-${index}`} value={license} />))}
+                        </datalist>
+                      )}
+                    </Form.Group>
+               
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold fs-5">State <span className="text-danger">*</span></Form.Label>
+                          <Form.Select name="state" value={form.state} onChange={handleLocationChange} required>
+                            <option value="">-- Select State --</option>
+                            {states.map(s => <option key={s} value={s}>{s}</option>)}
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold fs-5">District <span className="text-danger">*</span></Form.Label>
+                          {isOtherDistrict ? (
+                            <div className="d-flex align-items-center gap-2">
+                              <Form.Control type="text" name="district" placeholder="Enter district" required value={form.district} onChange={handleLocationChange} />
+                              <Button variant="outline-danger" onClick={() => { setIsOtherDistrict(false); setForm({ ...form, district: '', tehsil: '', near_village: '' }); }}>
+                                <FontAwesomeIcon icon={faXmark} />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Form.Select name="district" value={form.district} onChange={handleLocationChange} required>
+                              <option value="">-- Select District --</option>
+                              {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                            </Form.Select>
+                          )}
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold fs-5">Tehsil <span className="text-danger">*</span></Form.Label>
+                          {isOtherDistrict ? (
+                            <Form.Control type="text" name="tehsil" placeholder="Enter tehsil" required value={form.tehsil} onChange={handleFormChange} />
+                          ) : (
+                            <Form.Select name="tehsil" value={form.tehsil} onChange={handleLocationChange} required>
+                              <option value="">-- Select Tehsil --</option>
+                              {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
+                            </Form.Select>
+                          )}
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold fs-5">Nearby Village <span className="text-danger">*</span></Form.Label>
+                          {isOtherDistrict ? (
+                            <Form.Control type="text" name="near_village" placeholder="Enter village" required value={form.near_village} onChange={handleFormChange} />
+                          ) : (
+                            <Form.Select name="near_village" value={form.near_village} onChange={handleLocationChange} required>
+                              <option value="">-- Select Village --</option>
+                              {villages.map(v => <option key={v} value={v}>{v}</option>)}
+                            </Form.Select>
+                          )}
+                        </Form.Group>
+                      </Col>
+                    </Row>
                   </Col>
                 </Row>
-              </div>
+              </Card.Body>
+          </Card>
+          
+          {/* 3. Updated UI for Dynamic Stages */}
+          <Card className="mb-4 border-0 shadow-sm">
+            <Card.Header className="bg-primary text-white fw-bold fs-5 d-flex justify-content-between align-items-center">
+              <span><FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" /> Our Working Stages</span>
+              <Button variant="light" onClick={addStage} size="sm" className="fw-bold text-primary">
+                <TbPlus className="me-1" /> Add Stage
+              </Button>
+            </Card.Header>
+            <Card.Body>
+              {workingStages.map((stage, index) => (
+                <div key={index} className="p-3 border rounded bg-light mb-3">
+                  <Row className="align-items-end g-3">
+                    <Col xs={12} md={5}>
+                      <Form.Label className="fw-bold">Work Description <span className="text-danger">*</span></Form.Label>
+                      <Form.Control type="text" value={stage.workDescription} onChange={e => updateStage(index, 'workDescription', e.target.value)} placeholder="Enter work stage description" required />
+                    </Col>
+                    <Col xs={12} md={3}>
+                      <Form.Label className="fw-bold">Amount <span className="text-danger">*</span></Form.Label>
+                      <Form.Control type="number" min="0" value={stage.amount} onChange={e => updateStage(index, 'amount', e.target.value)} placeholder="Enter amount" required />
+                    </Col>
+                    <Col xs={6} md={2}>
+                      <Form.Label className="fw-bold">Status</Form.Label>
+                      <div><Badge bg="warning" className="p-2 fs-6 w-100"><FaClock className="me-1" /> Incomplete</Badge></div>
+                    </Col>
+                    <Col xs={6} md={2}>
+                      <Button variant="danger" className="w-100" onClick={() => removeStage(index)} disabled={workingStages.length === 1}>
+                        Remove
+                      </Button>
+                    </Col>
+                  </Row>
+                </div>
+              ))}
             </Card.Body>
           </Card>
 
-          {/* Transaction Summary Section */}
+
           <Card className="mb-4 border-0 shadow-sm bg-light">
             <Card.Header className="bg-dark text-white fw-bold fs-5"><FaCoins className="me-2" /> Transaction Summary</Card.Header>
             <Card.Body>
@@ -432,13 +414,11 @@ setTimeout(() => {
             </Card.Body>
           </Card>
 
-          {/* Optional Description Field */}
           <Form.Group className="mb-4">
             <Form.Label className="fw-bold fs-5"><FaPencilAlt className="me-1" /> Description (Optional)</Form.Label>
             <Form.Control as="textarea" rows={3} name="description" value={form.description} onChange={handleFormChange} placeholder="Add any additional notes or details about this transaction..." />
           </Form.Group>
 
-          {/* Submit & Reset Buttons */}
           <div className="text-center mt-5">
             <Button type="submit" variant="success" className="fw-bold px-4 py-2 me-3 rounded-pill" disabled={submitting || loadingClients}>
               {submitting ? <><Spinner size="sm" /> Saving...</> : <><FaSave /> Save Transaction</>}

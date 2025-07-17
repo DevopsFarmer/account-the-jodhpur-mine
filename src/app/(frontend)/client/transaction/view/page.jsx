@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card, } from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card } from "react-bootstrap";
 
 import axios from "axios";
-import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle,FaTrash } from "react-icons/fa";
+import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle, FaTrash } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 import { useRouter } from "next/navigation";
 
@@ -40,7 +40,7 @@ const ViewClientTransaction = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(""); 
   const [isPdfLoading, setIsPdfLoading] = useState(false);
-const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
 
   const [paymentStatusLoadingId, setPaymentStatusLoadingId] = useState(null);
   const [workStatusLoadingId, setWorkStatusLoadingId] = useState(null); 
@@ -169,7 +169,7 @@ const [transactionToDelete, setTransactionToDelete] = useState(null);
 
   // Replace your existing downloadPDF function with this complete, corrected version.
 
-const downloadPDF = async () => {
+  const downloadPDF = async () => {
   if (typeof window === "undefined" || !selectedTransaction) return;
 
   setIsPdfLoading(true);
